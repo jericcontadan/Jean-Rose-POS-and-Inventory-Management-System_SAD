@@ -28,6 +28,12 @@ class Sale extends Model
         ];
     }
 
+    // Receipt number shown to people: sale 1 -> "S-0001" (also used as audit_log.transaction_reference).
+    public function receiptNumber(): string
+    {
+        return 'S-'.str_pad((string) $this->sale_id, 4, '0', STR_PAD_LEFT);
+    }
+
     // The cashier (or owner) who made the sale.
     public function cashier(): BelongsTo
     {

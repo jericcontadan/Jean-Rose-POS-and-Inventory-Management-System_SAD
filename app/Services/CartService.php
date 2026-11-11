@@ -4,15 +4,18 @@ namespace App\Services;
 
 use App\Models\Product;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 // The current unpaid order, kept in the server session as [product_id => quantity].
 // Prices, discounts and totals are NEVER taken from the browser: summary() works them out
 // from the database every time, using FEFO batches (BatchPickerService) and the near-expiry rule (StockStatusService).
-// Nothing here changes stock. Stock only goes down when the order is paid (Step 3).
+// Nothing here changes stock. Stock only goes down when the order is paid (SaleService::pay()).
 class CartService
 {
     private const KEY = 'pos_cart';
+    private const TOKEN_KEY = 'pos_pay_token';
+    private const LAST_PAYMENT_KEY = 'pos_last_payment';
 
     public function __construct(
         private BatchPickerService $picker,
@@ -159,6 +162,42 @@ class CartService
     public function percentText(float $percent): string
     {
         return rtrim(rtrim(number_format($percent, 2, '.', ''), '0'), '.').'%';
+    }
+
+    // ---------- Pay token (stops a double tap from saving two sales) ----------
+    // Each payment form carries a one-time random token. After a sale is saved the token is "used":
+    // sending it again shows the same receipt instead of paying a second time.
+
+    // The token for the next payment (made once, kept until a payment uses it).
+    public function payToken(): string
+    {
+        if (! Session::has(self::TOKEN_KEY)) {
+            Session::put(self::TOKEN_KEY, Str::random(40));
+        }
+
+        return Session::get(self::TOKEN_KEY);
+    }
+
+    // True when $token is the one the current payment form was given.
+    public function isCurrentToken(string $token): bool
+    {
+        return hash_equals((string) Session::get(self::TOKEN_KEY, ''), $token);
+    }
+
+    // The sale already saved with this token, or null if the token was never used.
+    public function usedTokenSaleId(string $token): ?int
+    {
+        $last = Session::get(self::LAST_PAYMENT_KEY);
+
+        return $last && hash_equals($last['token'], $token) ? $last['sale_id'] : null;
+    }
+
+    // After a sale is saved: empty the cart, mark the token as used, and make a new token for the next order.
+    public function finishPayment(string $token, int $saleId): void
+    {
+        $this->clear();
+        Session::put(self::LAST_PAYMENT_KEY, ['token' => $token, 'sale_id' => $saleId]);
+        Session::put(self::TOKEN_KEY, Str::random(40));
     }
 
     // Store a quantity; 0 or less removes the line.

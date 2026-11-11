@@ -60,7 +60,8 @@
             <span>Subtotal</span>
             <span class="fw-bold">{{ number_format($order['subtotal'], 2) }}</span>
         </div>
-        @if (! empty($order['discounts']))
+        {{-- Shown only when there is a real discount, so it never reads "−0.00". --}}
+        @if (! empty($order['discounts']) && $order['discount_total'] > 0)
             <div class="jr-discount-line d-flex justify-content-between">
                 <span>
                     Near-expiry discount (auto)
@@ -82,12 +83,15 @@
         <button type="button" class="btn jr-btn-void" data-bs-toggle="modal" data-bs-target="#cancelOrderModal"
                 @disabled(empty($order['lines']))>Cancel / Void</button>
 
-        {{-- Payment is built in Step 3. Until then the button is shown but cannot be used. --}}
-        <button type="button" class="btn btn-primary jr-btn-pay" disabled
-                title="Payment comes next (Step 3)">Pay now</button>
+        {{-- Opens the payment box (pos/_payment-modal). Nothing is saved until "Confirm payment". --}}
+        <button type="button" class="btn btn-primary jr-btn-pay" data-bs-toggle="modal" data-bs-target="#paymentModal"
+                @disabled(empty($order['lines']))>Pay now</button>
     </div>
-    <p class="jr-hint mb-0">Payment comes next (Step 3).</p>
 </aside>
+
+@if (! empty($order['lines']))
+    @include('pos._payment-modal')
+@endif
 
 {{-- Confirm box for Cancel / Void (tap to open, no hover). It only clears this unpaid order. --}}
 <div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderTitle" aria-hidden="true">

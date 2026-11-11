@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HealthController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PosController;
+use App\Http\Controllers\ReceiptController;
 use Illuminate\Support\Facades\Route;
 
 // Public health check (no login needed).
@@ -27,6 +29,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/pos/cart/{product}/decrease', [PosController::class, 'decrease'])->name('pos.cart.decrease');
     Route::delete('/pos/cart/{product}', [PosController::class, 'remove'])->name('pos.cart.remove');
     Route::delete('/pos/cart', [PosController::class, 'clear'])->name('pos.cart.clear');
+
+    // Pay Now. block(): two taps from the same session run one after the other, never at the same time.
+    Route::post('/pos/pay', [PaymentController::class, 'store'])->name('pos.pay')->block(10, 10);
+
+    // Receipt of a saved sale (a cashier sees only their own; checked in ReceiptController).
+    Route::get('/receipts/{sale}', [ReceiptController::class, 'show'])->name('receipts.show');
 
     // Placeholder until Step 8 builds the Alerts screen (cashier and owner both use it).
     Route::view('/alerts', 'placeholder', ['title' => 'Alerts', 'step' => 8])->name('alerts.index');
