@@ -2,12 +2,13 @@
 
 namespace App\Services;
 
+use App\Models\Inventory;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 
 // The ONLY place with the stock status rule (docs/04-business-rules.md, "Stock status").
 // Check in this order and use the first match: OUT OF STOCK > NEAR EXPIRY > LOW STOCK > OKAY.
-// Step 2 only reads the status. Saving it to inventory.stock_status (refresh) comes in Step 3.
+// refresh() saves the result to inventory.stock_status (called by InventoryService after every stock change).
 class StockStatusService
 {
     public const OUT = 'OUT OF STOCK';
@@ -31,6 +32,23 @@ class StockStatusService
         }
 
         return self::OKAY;
+    }
+
+    // Status of one inventory row, using its batch's expiry date.
+    public function statusForInventory(Inventory $inventory): string
+    {
+        return $this->statusFor(
+            (int) $inventory->quantity_on_hand,
+            (int) $inventory->reorder_level,
+            $inventory->batch?->expiry_date,
+        );
+    }
+
+    // Work out the status again and save it (together with any quantity change already set on the row).
+    public function refresh(Inventory $inventory): void
+    {
+        $inventory->stock_status = $this->statusForInventory($inventory);
+        $inventory->save();
     }
 
     // Expired means the expiry date is before today. Expired batches are never sold.

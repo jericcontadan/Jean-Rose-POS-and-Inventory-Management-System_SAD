@@ -55,6 +55,7 @@ class PosController extends Controller
             'search' => $search,
             'categoryId' => $categoryId,
             'discountText' => $this->cart->percentText((float) config('pos.near_expiry_discount_percent')),
+            'payToken' => $this->cart->payToken(), // one-time token for the payment box (stops double taps)
         ]);
     }
 

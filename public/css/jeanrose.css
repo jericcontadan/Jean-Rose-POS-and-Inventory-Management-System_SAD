@@ -590,3 +590,136 @@ h1, h2, h3, h4, h5, h6, .btn {
 @media (max-width: 900px) {
     .jr-order-panel { max-width: none; }
 }
+
+/* ---------- 8. Payment box and receipt (mockup: docs/design/04-payment-receipt.png) ---------- */
+
+/* Payment box (Bootstrap modal) */
+.jr-pay-dialog { max-width: 560px; }
+.jr-pay-card {
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    box-shadow: 0 12px 32px rgba(209, 23, 126, 0.12);
+}
+.jr-pay-title { margin: 0; font-weight: 700; font-size: 28px; }
+.jr-pay-label { font-size: 14px; font-weight: 700; letter-spacing: 1px; }
+.jr-pay-total {
+    background: var(--jr-fill);
+    border-radius: 20px;
+    padding: 18px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    color: #5C1B43;
+}
+.jr-pay-total-amount {
+    font-family: var(--jr-font-head);
+    font-weight: 700;
+    font-size: 48px;
+    line-height: 1.1;
+    color: var(--jr-primary);
+}
+.jr-cash-field { position: relative; }
+.jr-cash-peso { position: absolute; left: 16px; top: 13px; font-size: 20px; font-weight: 700; color: var(--jr-muted); }
+.jr-cash-input,
+.jr-cash-input:focus {
+    min-height: 56px;
+    border-radius: 14px;
+    border-color: var(--jr-primary);
+    background: var(--jr-panel);
+    padding-left: 40px;
+    font-size: 22px;
+    font-weight: 700;
+}
+.jr-quick-cash { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+.jr-quick-btn {
+    min-height: 44px;
+    padding: 0 18px;
+    border-radius: 22px;
+    border: 2px solid var(--jr-border);
+    background: var(--jr-panel);
+    color: var(--jr-text-strong);
+    font-weight: 700;
+}
+.jr-quick-btn.active,
+.jr-quick-btn:active { border-color: var(--jr-primary); background: var(--jr-fill); }
+.jr-pay-hint { margin: 8px 0 0; font-size: 14px; color: var(--jr-muted); }
+.jr-change-box {
+    background: var(--jr-ok-bg);
+    color: var(--jr-ok-text);
+    border-radius: 20px;
+    padding: 16px 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.jr-change-amount { font-family: var(--jr-font-head); font-weight: 700; font-size: 36px; }
+.jr-change-box.is-short { background: #FFE5EA; color: var(--jr-error); }
+.jr-change-box.is-short .jr-change-amount { font-size: 22px; }
+.jr-pay-cancel { flex: 1 1 0; min-height: 56px; border-radius: 14px; }
+.jr-pay-confirm { flex: 2 1 0; min-height: 56px; border-radius: 14px; font-size: 18px; font-weight: 700; }
+
+/* Receipt page */
+.jr-receipt-page { max-width: 420px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+.jr-receipt {
+    background: var(--jr-panel);
+    border: 2px dashed var(--jr-border);
+    border-radius: 12px;
+    padding: 28px 28px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 15px;
+}
+.jr-receipt-shop {
+    text-align: center;
+    font-family: var(--jr-font-head);
+    font-weight: 700;
+    font-size: 17px;
+    line-height: 1.25;
+    color: var(--jr-primary);
+}
+.jr-receipt-heading { text-align: center; font-weight: 700; letter-spacing: 2px; }
+.jr-receipt-void { text-align: center; font-weight: 700; color: var(--jr-danger); border: 2px solid var(--jr-danger); border-radius: 8px; padding: 4px; }
+.jr-receipt-block {
+    border-top: 2px dashed var(--jr-border);
+    padding-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.jr-receipt-row { display: flex; justify-content: space-between; gap: 12px; }
+.jr-receipt-row > span:last-child { white-space: nowrap; text-align: right; }
+.jr-receipt-total { font-weight: 700; font-size: 18px; color: var(--jr-primary); }
+.jr-receipt-thanks {
+    text-align: center;
+    border-top: 2px dashed var(--jr-border);
+    padding-top: 12px;
+    font-family: var(--jr-font-head);
+    font-weight: 600;
+}
+.jr-receipt-saved {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--jr-ok-bg);
+    color: var(--jr-ok-text);
+    border-radius: 14px;
+    padding: 10px 14px;
+    font-size: 15px;
+    font-weight: 700;
+}
+.jr-receipt-btn { flex: 1 1 0; min-height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
+
+/* Printing the receipt: only the receipt card, black on white, no flash messages */
+@media print {
+    .jr-main > .alert { display: none !important; }
+    .jr-receipt-page { max-width: 80mm; }
+    .jr-receipt { border: 0; padding: 0; color: #000000; }
+    .jr-receipt-block,
+    .jr-receipt-thanks { border-top: 1px dashed #000000; }
+    .jr-receipt-shop,
+    .jr-receipt-total { color: #000000; }
+}
