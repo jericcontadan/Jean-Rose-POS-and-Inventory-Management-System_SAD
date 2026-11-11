@@ -1,0 +1,224 @@
+<!DOCTYPE html><html lang="en"><head><style>
+    .sc-placeholder{background:color-mix(in srgb,currentColor 8%,transparent);
+      border:1px solid color-mix(in srgb,currentColor 50%,transparent);
+      border-radius:2px;box-sizing:border-box;overflow:hidden}
+    @keyframes sc-shine{0%{background-position:100% 50%}100%{background-position:0% 50%}}
+    html.sc-dc-streaming .sc-placeholder,
+    html.sc-dc-streaming .sc-interp.sc-missing{position:relative;
+      background:color-mix(in srgb,currentColor 5%,transparent);
+      border-color:transparent}
+    html.sc-dc-streaming .sc-placeholder::before,
+    html.sc-dc-streaming .sc-interp.sc-missing::before{content:'';
+      position:absolute;inset:0;pointer-events:none;
+      background:linear-gradient(90deg,rgba(217,119,87,0) 25%,rgba(247,225,211,.95) 37%,rgba(217,119,87,0) 63%);
+      background-size:400% 100%;animation:sc-shine 1.4s ease infinite}
+    html.sc-dc-streaming .sc-placeholder:nth-child(n+9 of .sc-placeholder)::before,
+    html.sc-dc-streaming .sc-interp.sc-missing:nth-child(n+9 of .sc-interp.sc-missing)::before{animation:none;
+      background:color-mix(in srgb,currentColor 8%,transparent)}
+    .sc-placeholder-error{padding:4px 8px;font:11px/1.4 ui-monospace,monospace;
+      color:color-mix(in srgb,currentColor 70%,transparent);word-break:break-word}
+    .sc-interp.sc-missing{display:inline-block;width:2em;height:1em;overflow:hidden;
+      vertical-align:text-bottom;background:rgba(255,255,255,.3);border:1px solid rgba(0,0,0,.5);
+      border-radius:2px;box-sizing:border-box;color:transparent;
+      user-select:none}
+    .sc-interp.sc-unresolved{font-family:ui-monospace,monospace;font-size:.85em;
+      color:color-mix(in srgb,currentColor 50%,transparent);
+      background:color-mix(in srgb,currentColor 10%,transparent);border-radius:3px;
+      padding:0 3px}
+    .sc-host.sc-has-error{position:relative}
+    .sc-logic-error{position:absolute;top:8px;left:8px;z-index:2147483647;max-width:60ch;
+      padding:6px 10px;background:#b00020;color:#fff;font:12px/1.4 ui-monospace,monospace;
+      border-radius:4px;white-space:pre-wrap;pointer-events:none}
+    /* Mirrors PRINT_BASELINE_CSS in apps/web deck-stage-export.ts — keep both
+       in sync until dc-runtime regains a build step. */
+    @media print {
+      @page { margin: 0.5cm; }
+      figure, table { break-inside: avoid; }
+      #dc-root, #dc-root > .sc-host { height: auto; }
+      *, *::before, *::after {
+        print-color-adjust: exact; -webkit-print-color-adjust: exact;
+        backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+        animation-delay: -99s !important; animation-duration: .001s !important;
+        animation-iteration-count: 1 !important; animation-fill-mode: both !important;
+        animation-play-state: running !important; transition-duration: 0s !important;
+      }
+    }
+  </style>
+<meta charset="utf-8">
+<title>Audit log and export</title>
+
+<style>x-dc{display:none!important}</style><style>/* cyrillic-ext */
+
+/* cyrillic */
+
+/* vietnamese */
+
+/* latin-ext */
+
+/* latin */
+
+/* cyrillic-ext */
+
+/* cyrillic */
+
+/* vietnamese */
+
+/* latin-ext */
+
+/* latin */
+
+/* cyrillic-ext */
+
+/* cyrillic */
+
+/* vietnamese */
+
+/* latin-ext */
+
+/* latin */
+
+/* latin-ext */
+
+/* latin */
+
+/* devanagari */
+
+/* latin-ext */
+
+/* latin */
+
+/* devanagari */
+
+/* latin-ext */
+
+/* latin */
+
+</style><style>
+body{margin:0}
+a{color:#D1177E}
+</style><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Poppins:wght@500;600;700&family=Parisienne&display=swap" rel="stylesheet"></head>
+<body>
+<div id="dc-root"><div class="sc-host" data-sc-name="6ebe617c-1404-4c2c-8062-eae823fe5478"><div style="min-height: 760px; background: rgb(255, 240, 247); font-family: Nunito, system-ui, sans-serif; color: rgb(59, 10, 42);">
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; padding: 12px 32px; background: rgb(255, 255, 255); border-bottom: 2px solid rgb(245, 181, 214);">
+    <div style="display: flex; flex-direction: column; align-items: center; line-height: 1;">
+      <span style="font-family: Parisienne, cursive; font-size: 50px; line-height: 1; color: rgb(209, 23, 126);">Jean Rose</span>
+      <span style="font-family: Poppins, sans-serif; font-weight: 600; font-size: 10px; letter-spacing: 2.6px; color: rgb(209, 23, 126); margin-top: 2px;">BEAUTY PRODUCTS TRADING</span>
+    </div>
+    <nav aria-label="Owner menu" style="display: flex; flex-wrap: wrap; gap: 8px;">
+      <a href="POS.dc.html" style="height: 44px; display: inline-flex; align-items: center; padding: 0px 18px; border-radius: 22px; color: rgb(138, 15, 85); font-size: 16px; font-weight: 700; text-decoration: none; box-sizing: border-box;">POS</a>
+      <a href="Sales.dc.html" style="height: 44px; display: inline-flex; align-items: center; padding: 0px 18px; border-radius: 22px; color: rgb(138, 15, 85); font-size: 16px; font-weight: 700; text-decoration: none; box-sizing: border-box;">Sales Records</a>
+      <a href="Inventory.dc.html" style="height: 44px; display: inline-flex; align-items: center; padding: 0px 18px; border-radius: 22px; color: rgb(138, 15, 85); font-size: 16px; font-weight: 700; text-decoration: none; box-sizing: border-box;">Inventory</a>
+      <a href="Audit.dc.html" aria-current="page" style="height: 44px; display: inline-flex; align-items: center; padding: 0px 18px; border-radius: 22px; background: rgb(209, 23, 126); color: rgb(255, 255, 255); font-size: 16px; font-weight: 700; text-decoration: none; box-sizing: border-box;">Audit Log</a>
+    </nav>
+    <div style="flex: 1 1 0px;"></div>
+    <button type="button" style="height: 48px; display: inline-flex; align-items: center; gap: 10px; padding: 0px 18px; border-radius: 24px; border: 2px solid rgb(245, 181, 214); background: rgb(255, 227, 241); color: rgb(138, 15, 85); font-family: Nunito, sans-serif; font-size: 16px; font-weight: 700; cursor: pointer;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8A0F55" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 01-3.4 0"></path></svg>
+      Alerts
+      <span style="min-width: 26px; height: 26px; border-radius: 13px; background: rgb(209, 23, 126); color: rgb(255, 255, 255); font-size: 14px; display: inline-flex; align-items: center; justify-content: center;">3</span>
+    </button>
+    <div style="font-size: 15px; color: rgb(122, 63, 99);">Signed in as <strong style="color: rgb(59, 10, 42);">Owner</strong></div>
+    <a href="Main.dc.html" style="height: 48px; display: inline-flex; align-items: center; padding: 0px 20px; border-radius: 24px; border: 2px solid rgb(209, 23, 126); color: rgb(209, 23, 126); font-size: 16px; font-weight: 700; text-decoration: none; box-sizing: border-box;">Log out</a>
+  </header>
+  <main style="padding: 24px 32px; display: flex; flex-direction: column; gap: 20px; box-sizing: border-box;">
+    <h1 style="margin: 0px; font-family: Poppins, sans-serif; font-weight: 700; font-size: 30px;">Audit Log</h1>
+    <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+      <section style="flex: 999 1 620px; min-width: 0px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;">
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <label for="adate" style="font-size: 15px; font-weight: 700;">Date</label>
+            <input id="adate" type="text" value="11/6/2026" style="height: 48px; width: 150px; border-radius: 12px; border: 2px solid rgb(245, 181, 214); padding: 0px 14px; font-family: Nunito, sans-serif; font-size: 16px; color: rgb(59, 10, 42); background: rgb(255, 255, 255); box-sizing: border-box;">
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <label for="auser" style="font-size: 15px; font-weight: 700;">User</label>
+            <select id="auser" style="height: 48px; width: 150px; border-radius: 12px; border: 2px solid rgb(245, 181, 214); padding: 0px 12px; font-family: Nunito, sans-serif; font-size: 16px; color: rgb(59, 10, 42); background: rgb(255, 255, 255); box-sizing: border-box;"><option>All users</option></select>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <label for="aact" style="font-size: 15px; font-weight: 700;">Action</label>
+            <select id="aact" style="height: 48px; width: 170px; border-radius: 12px; border: 2px solid rgb(245, 181, 214); padding: 0px 12px; font-family: Nunito, sans-serif; font-size: 16px; color: rgb(59, 10, 42); background: rgb(255, 255, 255); box-sizing: border-box;"><option>All actions</option></select>
+          </div>
+          <button type="button" style="height: 48px; padding: 0px 24px; border: 0px; border-radius: 24px; background: rgb(209, 23, 126); color: rgb(255, 255, 255); font-family: Nunito, sans-serif; font-size: 16px; font-weight: 700; cursor: pointer;">Apply</button>
+          <button type="button" style="height: 48px; padding: 0px 20px; border-radius: 24px; border: 2px solid rgb(209, 23, 126); background: rgb(255, 255, 255); color: rgb(209, 23, 126); font-family: Nunito, sans-serif; font-size: 16px; font-weight: 700; cursor: pointer;">Export Excel</button>
+        </div>
+        <div style="background: rgb(255, 255, 255); border: 2px solid rgb(245, 181, 214); border-radius: 20px; overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 16px; min-width: 760px;">
+            <thead>
+              <tr style="background: rgb(255, 227, 241); color: rgb(92, 27, 67);">
+                <th style="text-align: left; padding: 14px 16px; font-size: 14px;">Date / Time</th>
+                <th style="text-align: left; padding: 14px 16px; font-size: 14px;">User</th>
+                <th style="text-align: left; padding: 14px 16px; font-size: 14px;">Action</th>
+                <th style="text-align: left; padding: 14px 16px; font-size: 14px;">Module</th>
+                <th style="text-align: left; padding: 14px 16px; font-size: 14px;">Reference</th>
+                <th style="text-align: left; padding: 14px 16px; font-size: 14px;">Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 12px 16px; border-bottom: 1px solid rgb(251, 211, 232); white-space: nowrap;">11/6/2026 09:15</td>
+                <td style="padding: 12px 16px; border-bottom: 1px solid rgb(251, 211, 232);">owner</td>
+                <td style="padding: 12px 16px; border-bottom: 1px solid rgb(251, 211, 232);"><span style="background: rgb(255, 224, 138); color: rgb(90, 59, 0); font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 12px; white-space: nowrap;">INVENTORY_UPDATE</span></td>
+                <td style="padding: 12px 16px; border-bottom: 1px solid rgb(251, 211, 232);">INVENTORY</td>
+                <td style="padding: 12px 16px; border-bottom: 1px solid rgb(251, 211, 232);">P-0001</td>
+                <td style="padding: 12px 16px; border-bottom: 1px solid rgb(251, 211, 232);">Price 120 to 125</td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 16px; border-bottom: 1px solid rgb(251, 211, 232); white-space: nowrap;">11/6/2026 09:02</td>
+                <td style="padding: 12px 16px; border-bottom: 1px solid rgb(251, 211, 232);">cashier</td>
+                <td style="padding: 12px 16px; border-bottom: 1px solid rgb(251, 211, 232);"><span style="background: rgb(211, 243, 239); color: rgb(10, 95, 99); font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 12px;">SALE</span></td>
+                <td style="padding: 12px 16px; border-bottom: 1px solid rgb(251, 211, 232);">SALES</td>
+                <td style="padding: 12px 16px; border-bottom: 1px solid rgb(251, 211, 232);">S-0002</td>
+                <td style="padding: 12px 16px; border-bottom: 1px solid rgb(251, 211, 232);">2 items, total 558.00</td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 16px; border-bottom: 1px solid rgb(251, 211, 232); white-space: nowrap;">11/6/2026 08:55</td>
+                <td style="padding: 12px 16px; border-bottom: 1px solid rgb(251, 211, 232);">cashier</td>
+                <td style="padding: 12px 16px; border-bottom: 1px solid rgb(251, 211, 232);"><span style="background: rgb(255, 227, 241); color: rgb(138, 15, 85); font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 12px;">LOGIN</span></td>
+                <td style="padding: 12px 16px; border-bottom: 1px solid rgb(251, 211, 232);">SALES</td>
+                <td style="padding: 12px 16px; border-bottom: 1px solid rgb(251, 211, 232);">-</td>
+                <td style="padding: 12px 16px; border-bottom: 1px solid rgb(251, 211, 232);">Signed in</td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 16px; white-space: nowrap;">11/6/2026 08:50</td>
+                <td style="padding: 12px 16px;">owner</td>
+                <td style="padding: 12px 16px;"><span style="background: rgb(142, 15, 62); color: rgb(255, 255, 255); font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 12px;">VOID</span></td>
+                <td style="padding: 12px 16px;">SALES</td>
+                <td style="padding: 12px 16px;">S-0001</td>
+                <td style="padding: 12px 16px;">Sale cancelled</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin: 0px; font-size: 14px; color: rgb(122, 63, 99);">Read-only list. Newest records first.</p>
+      </section>
+      <form style="flex: 1 1 320px; max-width: 400px; background: rgb(255, 255, 255); border: 2px solid rgb(245, 181, 214); border-radius: 24px; padding: 24px; display: flex; flex-direction: column; gap: 16px; box-sizing: border-box; box-shadow: rgba(209, 23, 126, 0.12) 0px 12px 32px;">
+        <h2 style="margin: 0px; font-family: Poppins, sans-serif; font-weight: 700; font-size: 22px;">Export to Excel</h2>
+        <fieldset style="border: 0px; margin: 0px; padding: 0px; display: flex; flex-direction: column; gap: 8px;">
+          <legend style="font-size: 15px; font-weight: 700; padding: 0px 0px 8px;">What to export</legend>
+          <label for="x-inv" style="display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0px 14px; border: 2px solid rgb(245, 181, 214); border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer;">
+            <input id="x-inv" type="radio" name="what" style="width: 20px; height: 20px; accent-color: rgb(209, 23, 126); margin: 0px;">Inventory list
+          </label>
+          <label for="x-sales" style="display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0px 14px; border: 2px solid rgb(245, 181, 214); border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer;">
+            <input id="x-sales" type="radio" name="what" style="width: 20px; height: 20px; accent-color: rgb(209, 23, 126); margin: 0px;">Sales Records
+          </label>
+          <label for="x-audit" style="display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0px 14px; border: 2px solid rgb(209, 23, 126); background: rgb(255, 227, 241); border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer;">
+            <input id="x-audit" type="radio" name="what" checked="" style="width: 20px; height: 20px; accent-color: rgb(209, 23, 126); margin: 0px;">Audit log
+          </label>
+        </fieldset>
+        <div style="display: flex; gap: 12px;">
+          <div style="flex: 1 1 0%; display: flex; flex-direction: column; gap: 6px;">
+            <label for="x-from" style="font-size: 15px; font-weight: 700;">From</label>
+            <input id="x-from" type="text" value="11/1/2026" style="height: 48px; border-radius: 12px; border: 2px solid rgb(245, 181, 214); padding: 0px 12px; font-family: Nunito, sans-serif; font-size: 16px; color: rgb(59, 10, 42); background: rgb(255, 240, 247); box-sizing: border-box; width: 100%;">
+          </div>
+          <div style="flex: 1 1 0%; display: flex; flex-direction: column; gap: 6px;">
+            <label for="x-to" style="font-size: 15px; font-weight: 700;">To</label>
+            <input id="x-to" type="text" value="11/6/2026" style="height: 48px; border-radius: 12px; border: 2px solid rgb(245, 181, 214); padding: 0px 12px; font-family: Nunito, sans-serif; font-size: 16px; color: rgb(59, 10, 42); background: rgb(255, 240, 247); box-sizing: border-box; width: 100%;">
+          </div>
+        </div>
+        <p style="margin: 0px; font-size: 14px; color: rgb(122, 63, 99);">Dates apply to Sales Records and Audit log.</p>
+        <button type="submit" style="height: 56px; border: 0px; border-radius: 14px; background: rgb(209, 23, 126); color: rgb(255, 255, 255); font-family: Poppins, sans-serif; font-size: 17px; font-weight: 700; cursor: pointer;">Download .xlsx</button>
+      </form>
+    </div>
+  </main></div></div></div>
+
+
+
+</body></html>
