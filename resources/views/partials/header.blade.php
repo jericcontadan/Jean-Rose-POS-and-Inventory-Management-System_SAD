@@ -2,6 +2,7 @@
     Header bar (mockup: docs/design/05-inventory-owner.png).
     OWNER: wordmark, tabs (POS, Sales Records, Inventory, Audit Log), Alerts, Signed in as, Log out.
     CASHIER: same but with NO tabs (cashier only uses the POS).
+    A page can add a search box with @section('header-search') (used by the POS).
     Guest: wordmark only.
     $openAlertCount comes from the view composer in AppServiceProvider.
     The menu only hides links; owner pages are also blocked on the server (can:owner).
@@ -29,6 +30,13 @@
             </div>
         @endcan
 
+        {{-- Optional search box for pages that need one (the POS puts its product search here, like the mockup). --}}
+        @hasSection('header-search')
+            <div class="jr-header-search order-lg-1">
+                @yield('header-search')
+            </div>
+        @endif
+
         {{-- Right side: Alerts, who is signed in, Log out --}}
         <div class="d-flex align-items-center gap-3 ms-auto order-lg-2">
             <a href="{{ url('/alerts') }}" class="jr-alerts-btn">
@@ -42,7 +50,8 @@
             </a>
 
             <div class="jr-signed-in">
-                <span class="d-none d-xl-inline">Signed in as</span>
+                {{-- "Signed in as" only on wide screens (1400px+); below that just the role, so the header fits on one row. --}}
+                <span class="d-none d-xxl-inline">Signed in as</span>
                 <strong>{{ auth()->user()->role === 'OWNER' ? 'Owner' : 'Cashier' }}</strong>
             </div>
 

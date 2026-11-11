@@ -379,11 +379,36 @@ h1, h2, h3, h4, h5, h6, .btn {
 .jr-login-link { text-align: center; font-weight: 700; color: var(--jr-primary); padding: 10px 0; }
 
 /* ---------- 5. Smaller screens ---------- */
-/* Tablet landscape 1024-1199px: tighten the header so it fits on one row */
+/* Tablet landscape 1024-1199px: a little less page padding */
 @media (max-width: 1199.98px) {
     :root { --jr-page-pad: 20px; }
-    .jr-header.navbar { gap: 12px; }
-    .nav-pills .nav-link { padding: 0 12px; }
+}
+/* From 992px up the header is ONE row: nothing wraps, only the search box shrinks to make room. */
+@media (min-width: 992px) {
+    .jr-header.navbar { flex-wrap: nowrap; }
+    .jr-header .jr-wordmark,
+    .jr-header .navbar-collapse,
+    .jr-header .ms-auto { flex-shrink: 0; }
+    .jr-header .nav-pills { flex-wrap: nowrap; }
+    .jr-header .nav-pills .nav-link { white-space: nowrap; }
+    .jr-header-search { min-width: 0; }
+}
+/* 992-1399px (tablet landscape and small PC screens): compact header so the row fits.
+   Smaller wordmark, tighter tabs and buttons, smaller gaps. Touch targets stay >= 44px high. */
+@media (min-width: 992px) and (max-width: 1399.98px) {
+    .jr-header.navbar { gap: 10px; }
+    .jr-wordmark-name { font-size: 34px; }
+    .jr-wordmark-tag { font-size: 8px; letter-spacing: 1.5px; }
+    .jr-header .nav-pills { gap: 4px; }
+    .jr-header .nav-pills .nav-link { padding: 0 10px; font-size: 15px; }
+    .jr-header .ms-auto { gap: 10px !important; }   /* beats Bootstrap's gap-3 on the right-side group */
+    .jr-alerts-btn { padding: 0 12px; gap: 6px; }
+    .jr-header .btn-pill { padding: 0 14px; }
+    .jr-header-search { flex-basis: 120px; }
+    .jr-search .form-control { padding-left: 40px; padding-right: 12px; }
+    /* Room for the clear (x) only while it is showing, so an empty box keeps more space for the placeholder */
+    .jr-search:has(.jr-search-clear:not([hidden])) .form-control { padding-right: 44px; }
+    .jr-search-icon { left: 12px; }
 }
 /* Below 992px the owner tabs sit on their own row under the Menu button */
 @media (max-width: 991.98px) {
@@ -403,4 +428,165 @@ h1, h2, h3, h4, h5, h6, .btn {
     body { background: #FFFFFF; }
     .jr-main { padding: 0; }
     .card { box-shadow: none; }
+}
+
+/* ---------- 7. POS screen (mockup: docs/design/03-pos-cashier.png) ---------- */
+
+/* Header search box (round, pink fill, icon on the left) */
+.jr-header-search { flex: 1 1 280px; max-width: 520px; }
+.jr-search { position: relative; margin: 0; }
+.jr-search .form-control { border-radius: 24px; padding-left: 48px; padding-right: 52px; }
+.jr-search-icon { position: absolute; left: 16px; top: 14px; color: var(--jr-muted); pointer-events: none; }
+/* Hide the browser's own small x; we show our bigger clear button instead (44px touch target). */
+.jr-search input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+.jr-search-clear {
+    position: absolute; right: 2px; top: 2px;
+    width: 44px; height: 44px;
+    border: 0; border-radius: 22px;
+    background: transparent;
+    color: var(--jr-muted);
+    display: flex; align-items: center; justify-content: center;
+}
+.jr-search-clear[hidden] { display: none; }
+.jr-search-clear:active { background: var(--jr-fill); color: var(--jr-text-strong); }
+
+.alert-warning { background: var(--jr-low-bg); color: var(--jr-low-text); border-color: var(--jr-low-text); }
+
+/* Two columns: products (wide) and Order Details (360-440px). They stack on narrow screens. */
+.jr-pos { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+.jr-pos-products { flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
+
+/* Category pills */
+.jr-cat-pills { display: flex; flex-wrap: wrap; gap: 10px; }
+.jr-cat-pill {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 22px;
+    border-radius: 22px;
+    border: 2px solid var(--jr-border);
+    background: var(--jr-panel);
+    color: var(--jr-text-strong);
+    font-weight: 700;
+    text-decoration: none;
+}
+.jr-cat-pill.active { background: var(--jr-primary); border-color: var(--jr-primary); color: var(--jr-primary-text); }
+
+/* Product cards */
+.jr-product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; }
+.jr-product-card {
+    background: var(--jr-panel);
+    border: 2px solid var(--jr-border);
+    border-radius: 20px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.jr-product-card form { margin: 0; }
+.jr-product-img {
+    height: 128px;
+    border-radius: 14px;
+    background: var(--jr-fill);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+.jr-product-photo { object-fit: contain; }
+.jr-card-badge { position: absolute; top: 8px; left: 8px; font-size: 13px; text-transform: none; padding: 3px 10px; }
+/* Name and price on one line; when the card is too narrow the price wraps under the name. */
+.jr-product-info { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 2px 8px; }
+.jr-product-name { font-family: var(--jr-font-head); font-weight: 600; font-size: 18px; overflow-wrap: break-word; }
+.jr-product-price { font-weight: 700; font-size: 18px; color: var(--jr-primary); white-space: nowrap; }
+
+/* Out of stock card: greyed, button cannot be pressed */
+.jr-product-card.is-out .jr-product-img { background: #F3E6EE; }
+.jr-product-card.is-out .jr-product-name,
+.jr-product-card.is-out .jr-product-price { color: #5C3A4D; }
+.jr-btn-unavailable,
+.jr-btn-unavailable:disabled { background: #EBD9E4; color: #5C3A4D; border-color: #EBD9E4; opacity: 1; width: 100%; }
+
+/* Pink placeholder icon when a product has no picture */
+.jr-ph-light { fill: #FF8FC7; }
+.jr-ph-dark  { fill: var(--jr-primary); }
+
+/* Order Details panel */
+.jr-order-panel {
+    flex: 1 1 360px;
+    max-width: 440px;
+    background: var(--jr-panel);
+    border: 2px solid var(--jr-border);
+    border-radius: var(--jr-radius-card);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: 0 12px 32px var(--jr-primary-soft);
+}
+.jr-order-title { margin: 0; font-weight: 700; font-size: 22px; }
+.jr-chip { background: var(--jr-fill); color: var(--jr-text-strong); font-size: 14px; font-weight: 700; padding: 4px 12px; border-radius: 14px; }
+.jr-order-lines { display: flex; flex-direction: column; gap: 12px; }
+.jr-order-line { background: var(--jr-bg); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.jr-order-line form { margin: 0; }
+.jr-order-thumb {
+    width: 52px; height: 52px; flex: 0 0 52px;
+    border-radius: 12px;
+    background: var(--jr-fill);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+}
+.jr-order-name { font-weight: 700; font-size: 17px; }
+.jr-order-each { font-size: 14px; color: var(--jr-muted); }
+.jr-order-amount { font-weight: 700; font-size: 17px; white-space: nowrap; }
+.jr-badge-sm { font-size: 13px; text-transform: none; padding: 1px 8px; }
+.min-w-0 { min-width: 0; }
+
+/* − / + buttons (44px touch targets) and Remove */
+.jr-qty-btn {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    border: 2px solid var(--jr-border);
+    background: var(--jr-panel);
+    color: var(--jr-primary);
+    font-size: 22px; font-weight: 700; line-height: 1;
+}
+.jr-qty-btn:disabled { opacity: 0.4; }
+.jr-qty { min-width: 40px; text-align: center; font-weight: 700; font-size: 18px; }
+.jr-remove-btn {
+    min-height: 44px;
+    padding: 0 12px;
+    border: 0;
+    background: transparent;
+    color: var(--jr-danger);
+    font-weight: 700; font-size: 15px;
+}
+
+/* Subtotal, discount lines, total */
+.jr-order-sums { border-top: 2px dashed var(--jr-border); padding-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+.jr-discount-line { color: var(--jr-ok-text); }
+.jr-total-label { font-weight: 700; color: #5C1B43; }
+
+/* Cancel / Void (outline, dark red) and Pay now (big, pink) */
+.jr-btn-void {
+    flex: 1 1 0;
+    min-height: 56px;
+    border-radius: 14px;
+    border-color: var(--jr-danger);
+    background: var(--jr-panel);
+    color: var(--jr-danger);
+    font-family: var(--jr-font-body);
+    font-weight: 700;
+}
+.jr-btn-void:hover,
+.jr-btn-void:active { background: var(--jr-fill); color: var(--jr-danger); border-color: var(--jr-danger); }
+.jr-btn-pay { flex: 2 1 0; min-height: 56px; border-radius: 14px; font-size: 20px; font-weight: 700; }
+.jr-hint { font-size: 14px; color: var(--jr-muted); text-align: right; }
+.jr-empty { color: var(--jr-muted); }
+.jr-modal { border-radius: var(--jr-radius-card); border: 2px solid var(--jr-border); }
+
+/* Narrow screens: the order panel takes the full width under the products */
+@media (max-width: 900px) {
+    .jr-order-panel { max-width: none; }
 }

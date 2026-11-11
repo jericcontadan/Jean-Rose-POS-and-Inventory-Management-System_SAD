@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HealthController;
+use App\Http\Controllers\PosController;
 use Illuminate\Support\Facades\Route;
 
 // Public health check (no login needed).
@@ -19,8 +20,13 @@ Route::middleware('auth')->group(function () {
 
     Route::redirect('/', '/pos');
 
-    // Placeholder until Step 2 builds the POS screen.
-    Route::view('/pos', 'placeholder', ['title' => 'Point of Sale', 'step' => 2])->name('pos.index');
+    // Point of Sale screen and its cart (the cart lives in the session until it is paid).
+    Route::get('/pos', [PosController::class, 'index'])->name('pos.index');
+    Route::post('/pos/cart/{product}', [PosController::class, 'add'])->name('pos.cart.add');
+    Route::post('/pos/cart/{product}/increase', [PosController::class, 'increase'])->name('pos.cart.increase');
+    Route::post('/pos/cart/{product}/decrease', [PosController::class, 'decrease'])->name('pos.cart.decrease');
+    Route::delete('/pos/cart/{product}', [PosController::class, 'remove'])->name('pos.cart.remove');
+    Route::delete('/pos/cart', [PosController::class, 'clear'])->name('pos.cart.clear');
 
     // Placeholder until Step 8 builds the Alerts screen (cashier and owner both use it).
     Route::view('/alerts', 'placeholder', ['title' => 'Alerts', 'step' => 8])->name('alerts.index');
