@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\User;
+use App\Models\UserAccount;
 
 return [
 
@@ -64,7 +64,8 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', User::class),
+            // Our users live in table user_account (see docs/02-database-schema.md).
+            'model' => env('AUTH_MODEL', UserAccount::class),
         ],
 
         // 'users' => [
