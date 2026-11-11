@@ -12,7 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Not logged in -> login page. Already logged in and opening /login -> POS.
+        $middleware->redirectGuestsTo('/login');
+        $middleware->redirectUsersTo('/pos');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

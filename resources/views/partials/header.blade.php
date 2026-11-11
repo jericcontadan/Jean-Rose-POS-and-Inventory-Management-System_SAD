@@ -7,7 +7,7 @@
     The menu only hides links; owner pages are also blocked on the server (can:owner).
 --}}
 <header class="jr-header navbar navbar-expand-lg">
-    <a href="{{ url('/') }}" class="jr-wordmark" aria-label="Jean Rose home">
+    <a href="{{ url('/pos') }}" class="jr-wordmark" aria-label="Jean Rose home">
         <span class="jr-wordmark-name">Jean Rose</span>
         <span class="jr-wordmark-tag">BEAUTY PRODUCTS TRADING</span>
     </a>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="C:\laragon\www\jeanrose-pos\phpunit.xml" tests="31" assertions="122" errors="0" failures="0" skipped="0" time="3.426908">
+    <testsuite name="Unit" tests="13" assertions="37" errors="0" failures="0" skipped="0" time="0.107383">
+      <testsuite name="Tests\Unit\ExampleTest" file="C:\laragon\www\jeanrose-pos\tests\Unit\ExampleTest.php" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.003179">
+        <testcase name="test_that_true_is_true" file="C:\laragon\www\jeanrose-pos\tests\Unit\ExampleTest.php" line="12" class="Tests\Unit\ExampleTest" classname="Tests.Unit.ExampleTest" assertions="1" time="0.003179"/>
+      </testsuite>
+      <testsuite name="Tests\Unit\ModelsTest" file="C:\laragon\www\jeanrose-pos\tests\Unit\ModelsTest.php" tests="12" assertions="36" errors="0" failures="0" skipped="0" time="0.104204">
+        <testsuite name="Tests\Unit\ModelsTest::test_model_maps_table_and_primary_key" tests="11" assertions="33" errors="0" failures="0" skipped="0" time="0.095604">
+          <testcase name="test_model_maps_table_and_primary_key with data set #0" file="C:\laragon\www\jeanrose-pos\tests\Unit\ModelsTest.php" line="41" class="Tests\Unit\ModelsTest" classname="Tests.Unit.ModelsTest" assertions="3" time="0.050993"/>
+          <testcase name="test_model_maps_table_and_primary_key with data set #1" file="C:\laragon\www\jeanrose-pos\tests\Unit\ModelsTest.php" line="41" class="Tests\Unit\ModelsTest" classname="Tests.Unit.ModelsTest" assertions="3" time="0.003606"/>
+          <testcase name="test_model_maps_table_and_primary_key with data set #2" file="C:\laragon\www\jeanrose-pos\tests\Unit\ModelsTest.php" line="41" class="Tests\Unit\ModelsTest" classname="Tests.Unit.ModelsTest" assertions="3" time="0.003384"/>
+          <testcase name="test_model_maps_table_and_primary_key with data set #3" file="C:\laragon\www\jeanrose-pos\tests\Unit\ModelsTest.php" line="41" class="Tests\Unit\ModelsTest" classname="Tests.Unit.ModelsTest" assertions="3" time="0.003527"/>
+          <testcase name="test_model_maps_table_and_primary_key with data set #4" file="C:\laragon\www\jeanrose-pos\tests\Unit\ModelsTest.php" line="41" class="Tests\Unit\ModelsTest" classname="Tests.Unit.ModelsTest" assertions="3" time="0.003645"/>
+          <testcase name="test_model_maps_table_and_primary_key with data set #5" file="C:\laragon\www\jeanrose-pos\tests\Unit\ModelsTest.php" line="41" class="Tests\Unit\ModelsTest" classname="Tests.Unit.ModelsTest" assertions="3" time="0.004887"/>
+          <testcase name="test_model_maps_table_and_primary_key with data set #6" file="C:\laragon\www\jeanrose-pos\tests\Unit\ModelsTest.php" line="41" class="Tests\Unit\ModelsTest" classname="Tests.Unit.ModelsTest" assertions="3" time="0.004879"/>
+          <testcase name="test_model_maps_table_and_primary_key with data set #7" file="C:\laragon\www\jeanrose-pos\tests\Unit\ModelsTest.php" line="41" class="Tests\Unit\ModelsTest" classname="Tests.Unit.ModelsTest" assertions="3" time="0.003949"/>
+          <testcase name="test_model_maps_table_and_primary_key with data set #8" file="C:\laragon\www\jeanrose-pos\tests\Unit\ModelsTest.php" line="41" class="Tests\Unit\ModelsTest" classname="Tests.Unit.ModelsTest" assertions="3" time="0.005879"/>
+          <testcase name="test_model_maps_table_and_primary_key with data set #9" file="C:\laragon\www\jeanrose-pos\tests\Unit\ModelsTest.php" line="41" class="Tests\Unit\ModelsTest" classname="Tests.Unit.ModelsTest" assertions="3" time="0.006098"/>
+          <testcase name="test_model_maps_table_and_primary_key with data set #10" file="C:\laragon\www\jeanrose-pos\tests\Unit\ModelsTest.php" line="41" class="Tests\Unit\ModelsTest" classname="Tests.Unit.ModelsTest" assertions="3" time="0.004757"/>
+        </testsuite>
+        <testcase name="test_user_account_uses_password_hash_and_no_remember_token" file="C:\laragon\www\jeanrose-pos\tests\Unit\ModelsTest.php" line="50" class="Tests\Unit\ModelsTest" classname="Tests.Unit.ModelsTest" assertions="3" time="0.008600"/>
+      </testsuite>
+    </testsuite>
+    <testsuite name="Feature" tests="18" assertions="85" errors="0" failures="0" skipped="0" time="3.319525">
+      <testsuite name="Tests\Feature\HealthTest" file="C:\laragon\www\jeanrose-pos\tests\Feature\HealthTest.php" tests="4" assertions="15" errors="0" failures="0" skipped="0" time="0.529568">
+        <testcase name="test_health_returns_ok" file="C:\laragon\www\jeanrose-pos\tests\Feature\HealthTest.php" line="10" class="Tests\Feature\HealthTest" classname="Tests.Feature.HealthTest" assertions="2" time="0.416725"/>
+        <testcase name="test_layout_loads_bootstrap_cdn_and_our_css_without_vite" file="C:\laragon\www\jeanrose-pos\tests\Feature\HealthTest.php" line="18" class="Tests\Feature\HealthTest" classname="Tests.Feature.HealthTest" assertions="6" time="0.057618"/>
+        <testcase name="test_guest_sees_logo_but_no_menu_or_logout" file="C:\laragon\www\jeanrose-pos\tests\Feature\HealthTest.php" line="31" class="Tests\Feature\HealthTest" classname="Tests.Feature.HealthTest" assertions="5" time="0.030194"/>
+        <testcase name="test_pos_settings_have_defaults" file="C:\laragon\www\jeanrose-pos\tests\Feature\HealthTest.php" line="42" class="Tests\Feature\HealthTest" classname="Tests.Feature.HealthTest" assertions="2" time="0.025032"/>
+      </testsuite>
+      <testsuite name="Tests\Feature\LoginTest" file="C:\laragon\www\jeanrose-pos\tests\Feature\LoginTest.php" tests="8" assertions="36" errors="0" failures="0" skipped="0" time="2.313351">
+        <testcase name="test_owner_can_log_in_and_login_is_audited" file="C:\laragon\www\jeanrose-pos\tests\Feature\LoginTest.php" line="39" class="Tests\Feature\LoginTest" classname="Tests.Feature.LoginTest" assertions="6" time="0.167924"/>
+        <testcase name="test_wrong_password_shows_generic_error" file="C:\laragon\www\jeanrose-pos\tests\Feature\LoginTest.php" line="53" class="Tests\Feature\LoginTest" classname="Tests.Feature.LoginTest" assertions="7" time="0.284270"/>
+        <testcase name="test_unknown_username_shows_same_generic_error" file="C:\laragon\www\jeanrose-pos\tests\Feature\LoginTest.php" line="68" class="Tests\Feature\LoginTest" classname="Tests.Feature.LoginTest" assertions="3" time="0.268180"/>
+        <testcase name="test_inactive_account_is_blocked" file="C:\laragon\www\jeanrose-pos\tests\Feature\LoginTest.php" line="78" class="Tests\Feature\LoginTest" classname="Tests.Feature.LoginTest" assertions="4" time="0.272730"/>
+        <testcase name="test_login_is_locked_after_five_wrong_tries" file="C:\laragon\www\jeanrose-pos\tests\Feature\LoginTest.php" line="91" class="Tests\Feature\LoginTest" classname="Tests.Feature.LoginTest" assertions="4" time="1.118324"/>
+        <testcase name="test_user_can_log_out" file="C:\laragon\www\jeanrose-pos\tests\Feature\LoginTest.php" line="108" class="Tests\Feature\LoginTest" classname="Tests.Feature.LoginTest" assertions="3" time="0.074371"/>
+        <testcase name="test_guest_is_sent_to_login" file="C:\laragon\www\jeanrose-pos\tests\Feature\LoginTest.php" line="116" class="Tests\Feature\LoginTest" classname="Tests.Feature.LoginTest" assertions="6" time="0.069041"/>
+        <testcase name="test_login_page_shows_the_form" file="C:\laragon\www\jeanrose-pos\tests\Feature\LoginTest.php" line="123" class="Tests\Feature\LoginTest" classname="Tests.Feature.LoginTest" assertions="3" time="0.058511"/>
+      </testsuite>
+      <testsuite name="Tests\Feature\RolesTest" file="C:\laragon\www\jeanrose-pos\tests\Feature\RolesTest.php" tests="2" assertions="10" errors="0" failures="0" skipped="0" time="0.214538">
+        <testcase name="test_cashier_gets_403_on_owner_pages" file="C:\laragon\www\jeanrose-pos\tests\Feature\RolesTest.php" line="32" class="Tests\Feature\RolesTest" classname="Tests.Feature.RolesTest" assertions="5" time="0.105139"/>
+        <testcase name="test_owner_can_open_all_pages" file="C:\laragon\www\jeanrose-pos\tests\Feature\RolesTest.php" line="44" class="Tests\Feature\RolesTest" classname="Tests.Feature.RolesTest" assertions="5" time="0.109399"/>
+      </testsuite>
+      <testsuite name="Tests\Feature\SetupTest" file="C:\laragon\www\jeanrose-pos\tests\Feature\SetupTest.php" tests="4" assertions="24" errors="0" failures="0" skipped="0" time="0.262067">
+        <testcase name="test_models_save_and_load_rows_with_relationships" file="C:\laragon\www\jeanrose-pos\tests\Feature\SetupTest.php" line="35" class="Tests\Feature\SetupTest" classname="Tests.Feature.SetupTest" assertions="7" time="0.106591"/>
+        <testcase name="test_user_account_password_is_hashed" file="C:\laragon\www\jeanrose-pos\tests\Feature\SetupTest.php" line="75" class="Tests\Feature\SetupTest" classname="Tests.Feature.SetupTest" assertions="2" time="0.046806"/>
+        <testcase name="test_owner_sees_all_tabs_in_header" file="C:\laragon\www\jeanrose-pos\tests\Feature\SetupTest.php" line="83" class="Tests\Feature\SetupTest" classname="Tests.Feature.SetupTest" assertions="8" time="0.057593"/>
+        <testcase name="test_cashier_sees_no_owner_tabs" file="C:\laragon\www\jeanrose-pos\tests\Feature\SetupTest.php" line="97" class="Tests\Feature\SetupTest" classname="Tests.Feature.SetupTest" assertions="7" time="0.051077"/>
+      </testsuite>
+    </testsuite>
+  </testsuite>
+</testsuites>

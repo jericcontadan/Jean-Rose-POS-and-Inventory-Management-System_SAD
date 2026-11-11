@@ -82,7 +82,7 @@ class SetupTest extends TestCase
 
     public function test_owner_sees_all_tabs_in_header(): void
     {
-        $response = $this->actingAs($this->makeUser('OWNER'))->get('/');
+        $response = $this->actingAs($this->makeUser('OWNER'))->get('/pos');
 
         $response->assertOk();
         $response->assertSee('POS');
@@ -96,7 +96,7 @@ class SetupTest extends TestCase
 
     public function test_cashier_sees_no_owner_tabs(): void
     {
-        $response = $this->actingAs($this->makeUser('CASHIER'))->get('/');
+        $response = $this->actingAs($this->makeUser('CASHIER'))->get('/pos');
 
         $response->assertOk();
         $response->assertSee('Cashier');

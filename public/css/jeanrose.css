@@ -315,6 +315,69 @@ h1, h2, h3, h4, h5, h6, .btn {
 /* Money is always right-aligned in tables */
 .jr-money { text-align: right; white-space: nowrap; }
 
+/* Login page (mockup 01-login): pink logo panel on the left, card on the right */
+.jr-login {
+    --jr-login-panel: #FF0184;           /* same pink as the logo's background */
+    min-height: 100vh;
+    display: flex;
+    flex-wrap: wrap;
+}
+.jr-login-brand {
+    flex: 3 1 560px;
+    background: var(--jr-login-panel);
+    color: #FFFFFF;
+    padding: 48px 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 28px;
+}
+.jr-login-logo { width: 100%; max-width: 740px; height: auto; display: block; }
+.jr-login-subtitle { font-family: var(--jr-font-head); font-weight: 600; font-size: 20px; text-align: center; }
+.jr-login-side {
+    flex: 2 1 420px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 32px;
+}
+.jr-login-card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--jr-panel);
+    border: 2px solid var(--jr-border);
+    border-radius: var(--jr-radius-card);
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    box-shadow: 0 12px 32px var(--jr-primary-soft);
+}
+.jr-login-title { margin: 0; font-weight: 700; font-size: 32px; color: var(--jr-text); }
+.jr-login-lead { margin: 6px 0 0; color: var(--jr-muted); }
+.jr-login-label { display: block; margin-bottom: 8px; font-size: 15px; font-weight: 700; color: var(--jr-text); }
+.jr-login-input { min-height: 52px; border-radius: 14px; padding: 0 16px; }
+.jr-password { position: relative; }
+.jr-password .jr-login-input { padding-right: 60px; }
+.jr-password-toggle {
+    position: absolute;
+    right: 4px;
+    top: 4px;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--jr-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.jr-password-toggle[aria-pressed="true"] { color: var(--jr-primary); }
+.jr-login-btn { min-height: 56px; border-radius: 14px; font-weight: 700; font-size: 18px; }
+.jr-login-link { text-align: center; font-weight: 700; color: var(--jr-primary); padding: 10px 0; }
+
 /* ---------- 5. Smaller screens ---------- */
 /* Tablet landscape 1024-1199px: tighten the header so it fits on one row */
 @media (max-width: 1199.98px) {
@@ -326,6 +389,11 @@ h1, h2, h3, h4, h5, h6, .btn {
 @media (max-width: 991.98px) {
     :root { --jr-page-pad: 16px; }
     .jr-header .navbar-collapse .nav-pills { padding-top: 8px; }
+    /* Login: smaller logo panel on top, card below */
+    .jr-login-brand { padding: 32px 16px; gap: 16px; }
+    .jr-login-logo { max-width: 480px; }
+    .jr-login-side { padding: 32px 16px; }
+    .jr-login-card { padding: 28px; }
 }
 
 /* ---------- 6. Print (receipts) ---------- */

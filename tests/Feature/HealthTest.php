@@ -17,7 +17,7 @@ class HealthTest extends TestCase
 
     public function test_layout_loads_bootstrap_cdn_and_our_css_without_vite(): void
     {
-        $response = $this->get('/');
+        $response = $this->get('/login');
 
         $response->assertOk();
         $response->assertSee('name="viewport" content="width=device-width, initial-scale=1"', false);
@@ -27,12 +27,14 @@ class HealthTest extends TestCase
         $response->assertDontSee('/build/', false);
     }
 
-    public function test_guest_sees_wordmark_but_no_menu_or_logout(): void
+    // Guests only see the login page: logo, no menu, no Log out.
+    public function test_guest_sees_logo_but_no_menu_or_logout(): void
     {
-        $response = $this->get('/');
+        $response = $this->get('/login');
 
-        $response->assertSee('Jean Rose');
-        $response->assertSee('BEAUTY PRODUCTS TRADING');
+        $response->assertOk();
+        $response->assertSee('images/logo.png', false);
+        $response->assertSee('POS and Inventory System');
         $response->assertDontSee('Log out');
         $response->assertDontSee('Sales Records');
     }
