@@ -1,0 +1,338 @@
+/* =========================================================
+   Jean Rose POS - shared styles
+   Values come from docs/design/design-tokens.md (the team mockup).
+   Loaded AFTER the Bootstrap CDN link, so these rules win.
+   Views use Bootstrap classes + the .jr-* classes below.
+   Do not put hex colors or inline styles in views.
+   ========================================================= */
+
+/* ---------- 1. Design tokens ---------- */
+:root {
+    --jr-primary: #D1177E;
+    --jr-primary-dark: #B01268;          /* pressed/active state of main buttons */
+    --jr-primary-text: #FFFFFF;
+    --jr-primary-soft: rgba(209, 23, 126, 0.12);
+    --jr-text: #3B0A2A;
+    --jr-text-strong: #8A0F55;
+    --jr-muted: #7A3F63;
+    --jr-bg: #FFF0F7;
+    --jr-panel: #FFFFFF;
+    --jr-fill: #FFE3F1;
+    --jr-border: #F5B5D6;
+    --jr-border-soft: #FBD3E8;
+    --jr-danger: #8E0F3E;
+    --jr-error: #B00020;
+    --jr-near-expiry-bg: #FFE08A;
+    --jr-near-expiry-text: #5A3B00;
+    --jr-low-bg: #FFD0B0;
+    --jr-low-text: #6B2D00;
+    --jr-ok-bg: #D3F3EF;
+    --jr-ok-text: #0A5F63;
+
+    --jr-font-body: 'Nunito', system-ui, sans-serif;
+    --jr-font-head: 'Poppins', system-ui, sans-serif;
+    --jr-font-script: 'Parisienne', cursive;
+
+    --jr-control-height: 48px;           /* buttons and inputs, never below 44px */
+    --jr-radius: 12px;                   /* buttons and inputs */
+    --jr-radius-card: 24px;
+    --jr-shadow: 0 4px 16px rgba(209, 23, 126, 0.08);
+    --jr-page-pad: 32px;
+
+    /* ---------- 2. Bootstrap variable overrides ---------- */
+    --bs-primary: #D1177E;
+    --bs-primary-rgb: 209, 23, 126;
+    --bs-danger: #8E0F3E;
+    --bs-danger-rgb: 142, 15, 62;
+    --bs-body-bg: #FFF0F7;
+    --bs-body-color: #3B0A2A;
+    --bs-body-font-family: var(--jr-font-body);
+    --bs-body-font-size: 16px;
+    --bs-border-color: #F5B5D6;
+    --bs-border-radius: 12px;
+    --bs-link-color: #8A0F55;
+    --bs-link-color-rgb: 138, 15, 85;
+    --bs-link-hover-color: #D1177E;
+    --bs-link-hover-color-rgb: 209, 23, 126;
+    --bs-focus-ring-color: rgba(209, 23, 126, 0.25);
+}
+
+body {
+    background: var(--jr-bg);
+    color: var(--jr-text);
+    font-family: var(--jr-font-body);
+    min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6, .btn {
+    font-family: var(--jr-font-head);
+}
+
+/* ---------- 3. Bootstrap components restyled ---------- */
+
+/* Buttons: 48px high, rounded, bold */
+.btn {
+    min-height: var(--jr-control-height);
+    border-radius: var(--jr-radius);
+    border-width: 2px;
+    font-weight: 600;
+    padding: 0 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+.btn-primary {
+    --bs-btn-bg: var(--jr-primary);
+    --bs-btn-border-color: var(--jr-primary);
+    --bs-btn-color: var(--jr-primary-text);
+    --bs-btn-hover-bg: var(--jr-primary-dark);
+    --bs-btn-hover-border-color: var(--jr-primary-dark);
+    --bs-btn-hover-color: var(--jr-primary-text);
+    --bs-btn-active-bg: var(--jr-primary-dark);
+    --bs-btn-active-border-color: var(--jr-primary-dark);
+    --bs-btn-disabled-bg: var(--jr-primary);
+    --bs-btn-disabled-border-color: var(--jr-primary);
+    --bs-btn-focus-shadow-rgb: 209, 23, 126;
+}
+.btn-outline-primary {
+    --bs-btn-color: var(--jr-primary);
+    --bs-btn-bg: var(--jr-panel);
+    --bs-btn-border-color: var(--jr-primary);
+    --bs-btn-hover-bg: var(--jr-fill);
+    --bs-btn-hover-color: var(--jr-text-strong);
+    --bs-btn-hover-border-color: var(--jr-primary);
+    --bs-btn-active-bg: var(--jr-fill);
+    --bs-btn-active-color: var(--jr-text-strong);
+    --bs-btn-active-border-color: var(--jr-primary);
+    --bs-btn-focus-shadow-rgb: 209, 23, 126;
+}
+.btn-danger {
+    --bs-btn-bg: var(--jr-danger);
+    --bs-btn-border-color: var(--jr-danger);
+    --bs-btn-hover-bg: #6F0B30;
+    --bs-btn-hover-border-color: #6F0B30;
+    --bs-btn-active-bg: #6F0B30;
+    --bs-btn-active-border-color: #6F0B30;
+}
+.btn-pill { border-radius: 24px; }   /* fully round buttons (header, toolbar) */
+
+/* Inputs: 48px high, pink border, pink fill */
+.form-control,
+.form-select {
+    min-height: var(--jr-control-height);
+    border: 2px solid var(--jr-border);
+    border-radius: var(--jr-radius);
+    background-color: var(--jr-bg);
+    color: var(--jr-text);
+    font-size: 16px;
+}
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--jr-primary);
+    box-shadow: 0 0 0 4px var(--jr-primary-soft);
+    background-color: var(--jr-panel);
+}
+.form-control.is-invalid,
+.form-select.is-invalid { border-color: var(--jr-error); }
+.invalid-feedback { color: var(--jr-error); font-weight: 600; }
+.form-label { color: var(--jr-muted); font-weight: 700; }
+
+/* Cards: white, 2px pink border, 24px radius, soft shadow */
+.card {
+    --bs-card-border-color: var(--jr-border);
+    --bs-card-border-width: 2px;
+    --bs-card-border-radius: var(--jr-radius-card);
+    --bs-card-inner-border-radius: 22px;
+    --bs-card-bg: var(--jr-panel);
+    box-shadow: var(--jr-shadow);
+}
+
+/* Badges: pill, 12px bold */
+.badge {
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+}
+
+/* Nav pills: used for the owner tabs in the header */
+.nav-pills {
+    --bs-nav-pills-border-radius: 22px;
+    --bs-nav-pills-link-active-bg: var(--jr-primary);
+    --bs-nav-pills-link-active-color: var(--jr-primary-text);
+    --bs-nav-link-color: var(--jr-text-strong);
+    --bs-nav-link-hover-color: var(--jr-primary);
+    gap: 8px;
+}
+.nav-pills .nav-link {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 18px;
+    font-family: var(--jr-font-head);
+    font-weight: 600;
+    font-size: 16px;
+}
+
+/* Tables: pink header row, soft row lines */
+.table {
+    --bs-table-bg: var(--jr-panel);
+    --bs-table-color: var(--jr-text);
+    --bs-table-border-color: var(--jr-border-soft);
+    margin-bottom: 0;
+}
+.table > thead th {
+    background: var(--jr-fill);
+    color: #5C1B43;
+    font-size: 14px;
+    padding: 14px 16px;
+}
+.table > tbody td { padding: 12px 16px; vertical-align: middle; }
+
+/* Alerts (flash messages) */
+.alert { border-width: 2px; border-radius: var(--jr-radius); font-weight: 600; }
+.alert-success { background: var(--jr-ok-bg); color: var(--jr-ok-text); border-color: var(--jr-ok-text); }
+.alert-danger  { background: #FFE5EA; color: var(--jr-error); border-color: var(--jr-error); }
+
+/* ---------- 4. Jean Rose classes ---------- */
+
+/* Page body padding and title */
+.jr-main { padding: 24px var(--jr-page-pad); }
+.jr-page-title {
+    font-family: var(--jr-font-head);
+    font-weight: 700;
+    font-size: 32px;
+    margin: 0;
+}
+
+/* Header bar: white, 2px pink bottom border */
+.jr-header.navbar {
+    background: var(--jr-panel);
+    border-bottom: 2px solid var(--jr-border);
+    padding: 12px var(--jr-page-pad);
+    flex-wrap: wrap;
+    gap: 12px 20px;
+}
+
+/* Wordmark "Jean Rose" + "BEAUTY PRODUCTS TRADING" */
+.jr-wordmark {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1;
+    color: var(--jr-primary);
+    text-decoration: none;
+}
+.jr-wordmark:hover { color: var(--jr-primary); }
+.jr-wordmark-name {
+    font-family: var(--jr-font-script);
+    font-size: 50px;
+    line-height: 1;
+}
+.jr-wordmark-tag {
+    font-family: var(--jr-font-head);
+    font-weight: 600;
+    font-size: 10px;
+    letter-spacing: 2.6px;
+    margin-top: 2px;
+}
+
+/* Alerts button in the header, with a round count */
+.jr-alerts-btn {
+    min-height: var(--jr-control-height);
+    border-radius: 24px;
+    border: 2px solid var(--jr-border);
+    background: var(--jr-fill);
+    color: var(--jr-text-strong);
+    font-family: var(--jr-font-body);
+    font-weight: 700;
+    padding: 0 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+.jr-alerts-btn:hover,
+.jr-alerts-btn:active { color: var(--jr-text-strong); border-color: var(--jr-primary); }
+.jr-alerts-count {
+    min-width: 26px;
+    height: 26px;
+    border-radius: 13px;
+    background: var(--jr-primary);
+    color: var(--jr-primary-text);
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+}
+
+.jr-signed-in { font-size: 15px; color: var(--jr-muted); }
+.jr-signed-in strong { color: var(--jr-text); }
+
+/* "Menu" button that shows the owner tabs on small screens (tap, not hover) */
+.jr-menu-btn {
+    min-height: var(--jr-control-height);
+    border-radius: 24px;
+    border: 2px solid var(--jr-border);
+    color: var(--jr-text-strong);
+    font-weight: 700;
+    padding: 0 18px;
+}
+
+/* Stock status badges */
+.jr-badge-low,
+.jr-badge-out,
+.jr-badge-near,
+.jr-badge-ok {
+    display: inline-block;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    white-space: nowrap;
+}
+.jr-badge-low  { background: var(--jr-low-bg);         color: var(--jr-low-text); }
+.jr-badge-out  { background: var(--jr-danger);         color: #FFFFFF; }
+.jr-badge-near { background: var(--jr-near-expiry-bg); color: var(--jr-near-expiry-text); }
+.jr-badge-ok   { background: var(--jr-ok-bg);          color: var(--jr-ok-text); }
+
+/* Big total box (POS order panel, payment) */
+.jr-total-box {
+    background: var(--jr-fill);
+    border-radius: 16px;
+    padding: 16px 20px;
+}
+.jr-total-amount {
+    font-family: var(--jr-font-head);
+    font-weight: 800;
+    font-size: 36px;
+    color: var(--jr-primary);
+}
+
+/* Money is always right-aligned in tables */
+.jr-money { text-align: right; white-space: nowrap; }
+
+/* ---------- 5. Smaller screens ---------- */
+/* Tablet landscape 1024-1199px: tighten the header so it fits on one row */
+@media (max-width: 1199.98px) {
+    :root { --jr-page-pad: 20px; }
+    .jr-header.navbar { gap: 12px; }
+    .nav-pills .nav-link { padding: 0 12px; }
+}
+/* Below 992px the owner tabs sit on their own row under the Menu button */
+@media (max-width: 991.98px) {
+    :root { --jr-page-pad: 16px; }
+    .jr-header .navbar-collapse .nav-pills { padding-top: 8px; }
+}
+
+/* ---------- 6. Print (receipts) ---------- */
+@media print {
+    .jr-header,
+    .jr-no-print { display: none !important; }
+    body { background: #FFFFFF; }
+    .jr-main { padding: 0; }
+    .card { box-shadow: none; }
+}
