@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\InventoryController;
@@ -50,6 +51,6 @@ Route::middleware(['auth', 'can:owner'])->group(function () {
     // Sales Records (read only for now): date filter, sales grouped by receipt, daily summary, Close summary.
     Route::get('/sales', [SalesRecordController::class, 'index'])->name('sales.index');
 
-    // Placeholder until Step 6 builds this screen.
-    Route::view('/audit-log', 'placeholder', ['title' => 'Audit Log', 'step' => 6])->name('audit.index');
+    // Audit Log: READ ONLY. GET only, on purpose: there is no route to edit or delete audit rows (T18).
+    Route::get('/audit-log', [AuditLogController::class, 'index'])->name('audit.index');
 });
