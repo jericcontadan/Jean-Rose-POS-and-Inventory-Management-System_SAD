@@ -1021,3 +1021,63 @@ h1, h2, h3, h4, h5, h6, .btn {
 @media (max-width: 991.98px) {
     .jr-audit-export { max-width: none; }
 }
+
+/* ---------- 12. Update stock / Update price (mockup: docs/design/06-stock-price-product-import.png) ---------- */
+/* Each card is its own page, centered. */
+.jr-form-page { display: flex; justify-content: center; align-items: flex-start; padding: 16px 0; }
+.jr-edit-card {
+    width: 100%;
+    max-width: 440px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    border-radius: var(--jr-radius-card);
+    box-shadow: 0 12px 32px var(--jr-primary-soft);
+}
+.jr-edit-title { font-family: var(--jr-font-head); font-weight: 700; font-size: 24px; margin: 0; }
+.jr-edit-row { display: flex; gap: 12px; }
+.jr-edit-row > .jr-edit-field { flex: 1 1 0; min-width: 0; }
+.jr-edit-field { display: flex; flex-direction: column; gap: 6px; }
+.jr-edit-label { font-size: 15px; font-weight: 700; }
+.jr-edit-input { font-size: 18px; font-weight: 700; }
+
+/* Read-only values (product, batch, current stock or price) */
+.jr-readonly-box {
+    min-height: var(--jr-control-height);
+    border-radius: var(--jr-radius);
+    background: var(--jr-fill);
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+}
+.jr-readonly-big { font-size: 18px; font-weight: 700; }
+
+/* NEW STOCK preview box */
+.jr-new-stock {
+    background: var(--jr-ok-bg);
+    color: var(--jr-ok-text);
+    border-radius: 14px;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.jr-new-stock-label { font-size: 14px; font-weight: 700; letter-spacing: 1px; }
+.jr-new-stock-value { font-family: var(--jr-font-head); font-weight: 700; font-size: 28px; }
+
+.jr-form-note { margin: 0; font-size: 14px; color: var(--jr-muted); }
+
+/* Cancel (narrow) and Save (wide), 52px high */
+.jr-edit-buttons { display: flex; gap: 12px; }
+.jr-edit-cancel,
+.jr-edit-save {
+    min-height: 52px;
+    border-radius: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.jr-edit-cancel { flex: 1 1 0; }
+.jr-edit-save { flex: 1.4 1 0; }

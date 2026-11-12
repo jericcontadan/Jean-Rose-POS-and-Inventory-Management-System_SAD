@@ -6,6 +6,7 @@ use App\Http\Controllers\HealthController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PosController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\SalesRecordController;
 use Illuminate\Support\Facades\Route;
@@ -45,8 +46,15 @@ Route::middleware('auth')->group(function () {
 
 // OWNER only. can:owner uses the Gate in AppServiceProvider and returns 403 for the cashier.
 Route::middleware(['auth', 'can:owner'])->group(function () {
-    // Inventory (read only for now): one row per batch, summary cards, live search.
+    // Inventory: one row per batch, summary cards, live search.
     Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
+
+    // Update stock of one batch (RESTOCK) and Update price of one product.
+    // block(): two taps on Save run one after the other, never at the same time.
+    Route::get('/inventory/{inventory}/stock', [InventoryController::class, 'editStock'])->name('inventory.stock.edit');
+    Route::put('/inventory/{inventory}/stock', [InventoryController::class, 'updateStock'])->name('inventory.stock.update')->block(10, 10);
+    Route::get('/products/{product}/price', [ProductController::class, 'editPrice'])->name('products.price.edit');
+    Route::put('/products/{product}/price', [ProductController::class, 'updatePrice'])->name('products.price.update')->block(10, 10);
 
     // Sales Records: date filter, sales grouped by receipt, daily summary, Close summary.
     Route::get('/sales', [SalesRecordController::class, 'index'])->name('sales.index');
