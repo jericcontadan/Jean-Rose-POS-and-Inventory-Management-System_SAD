@@ -1,9 +1,12 @@
 {{--
     Product picture: product.image_path if the file is in public/, otherwise a pink placeholder icon.
     Needs: $product, $size (pixels).
+    An uploaded photo (storage/products/...) gets the class jr-photo-upload: on a POS card it fills the image area
+    (white background, rounded corners, whole photo visible). The placeholder stays a small icon.
 --}}
 @if ($product->image_path && is_file(public_path($product->image_path)))
-    <img src="{{ asset($product->image_path) }}" alt="" width="{{ $size }}" height="{{ $size }}" class="jr-product-photo">
+    <img src="{{ asset($product->image_path) }}" alt="" width="{{ $size }}" height="{{ $size }}"
+         class="jr-product-photo {{ str_starts_with($product->image_path, 'storage/products/') ? 'jr-photo-upload' : '' }}">
 @else
     <svg class="jr-placeholder-icon" width="{{ $size }}" height="{{ $size }}" viewBox="0 0 48 48" aria-hidden="true">
         <rect class="jr-ph-light" x="16" y="18" width="16" height="24" rx="4"></rect>

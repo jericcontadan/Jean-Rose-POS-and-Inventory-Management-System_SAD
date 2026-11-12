@@ -56,6 +56,15 @@ Route::middleware(['auth', 'can:owner'])->group(function () {
     Route::get('/products/{product}/price', [ProductController::class, 'editPrice'])->name('products.price.edit');
     Route::put('/products/{product}/price', [ProductController::class, 'updatePrice'])->name('products.price.update')->block(10, 10);
 
+    // Add or Edit Product (screen 12): add a product with its first batch, edit product fields,
+    // add a new batch (new delivery), and the trash on an Inventory row (delete one unused batch).
+    Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
+    Route::post('/products', [ProductController::class, 'store'])->name('products.store')->block(10, 10);
+    Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
+    Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update')->block(10, 10);
+    Route::post('/products/{product}/batches', [ProductController::class, 'storeBatch'])->name('products.batches.store')->block(10, 10);
+    Route::delete('/inventory/{inventory}', [InventoryController::class, 'destroy'])->name('inventory.destroy')->block(10, 10);
+
     // Sales Records: date filter, sales grouped by receipt, daily summary, Close summary.
     Route::get('/sales', [SalesRecordController::class, 'index'])->name('sales.index');
 

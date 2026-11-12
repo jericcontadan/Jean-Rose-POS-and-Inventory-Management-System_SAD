@@ -502,6 +502,15 @@ h1, h2, h3, h4, h5, h6, .btn {
     overflow: hidden;
 }
 .jr-product-photo { object-fit: contain; }
+/* Uploaded photos: whole photo visible on a white background with rounded corners (order lines, edit page) */
+.jr-photo-upload { background: var(--jr-panel); border-radius: 8px; }
+/* On a POS card the photo fills the whole image area */
+.jr-product-img .jr-photo-upload {
+    width: 100%;
+    height: 100%;
+    padding: 6px;
+    border-radius: 14px;
+}
 .jr-card-badge { position: absolute; top: 8px; left: 8px; font-size: 13px; text-transform: none; padding: 3px 10px; }
 /* Name and price on one line; when the card is too narrow the price wraps under the name. */
 .jr-product-info { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 2px 8px; }
@@ -1081,3 +1090,55 @@ h1, h2, h3, h4, h5, h6, .btn {
 }
 .jr-edit-cancel { flex: 1 1 0; }
 .jr-edit-save { flex: 1.4 1 0; }
+
+/* ---------- 13. Add or Edit Product (mockup: docs/design/06-stock-price-product-import.png, "Add product" card) ---------- */
+/* Own class name: .jr-product-card is the POS product card */
+.jr-product-form { max-width: 480px; }
+
+/* Edit product: the product card and the "Add new batch" card side by side (stacked on narrow screens) */
+.jr-form-page-two { gap: 32px; flex-wrap: wrap; }
+
+/* Dashed "Product image" box with the Upload image button */
+.jr-image-box {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--jr-bg);
+    border: 2px dashed var(--jr-border);
+    border-radius: 14px;
+    padding: 12px;
+}
+.jr-image-box.is-invalid { border-color: var(--jr-error); }
+.jr-image-thumb {
+    width: 56px; height: 56px; flex: none;
+    border-radius: var(--jr-radius);
+    background: var(--jr-fill);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+}
+.jr-image-text { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; }
+.jr-image-name { font-size: 13px; color: var(--jr-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.jr-image-btn { min-height: 44px; display: flex; align-items: center; padding: 0 16px; font-size: 15px; font-weight: 700; white-space: nowrap; }
+.jr-field-error { color: var(--jr-error); font-weight: 600; font-size: 0.875em; }
+
+/* "First batch" section under a dashed line, pink Poppins heading */
+.jr-batch-section {
+    border-top: 2px dashed var(--jr-border);
+    padding-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.jr-section-title { font-family: var(--jr-font-head); font-weight: 600; font-size: 17px; color: var(--jr-primary); margin: 0; }
+
+/* Current batches list on the Edit product page */
+.jr-batch-list { display: flex; flex-direction: column; gap: 4px; }
+.jr-batch-list-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: var(--jr-radius);
+    background: var(--jr-fill);
+    font-size: 15px;
+}

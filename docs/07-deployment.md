@@ -16,6 +16,7 @@ Laragon is only for laptops. The owner never installs anything.
    `QUEUE_CONNECTION=sync`, `SESSION_SECURE_COOKIE=true`, `APP_TIMEZONE=Asia/Manila`, Gmail SMTP with the Google App password.
 6. `composer install --no-dev --optimize-autoloader`, `php artisan key:generate`, `php artisan config:cache route:cache view:cache`,
    `php artisan storage:link`, folder permissions for `storage` and `bootstrap/cache`.
+   `storage:link` makes uploaded product images visible: it links `public/storage` to `storage/app/public`. Run it once per server.
 7. Nginx site pointing to `public/`, then `certbot --nginx`. Add the cron for the scheduler:
    `* * * * * cd /var/www/jeanrose-pos && php artisan schedule:run >> /dev/null 2>&1`
 8. `deploy.sh` for every update (git pull, composer install, cache commands, reload php-fpm, check `/health`).
