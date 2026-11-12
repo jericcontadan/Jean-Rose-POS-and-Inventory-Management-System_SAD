@@ -26,17 +26,33 @@ class InventoryService
             throw new RuntimeException("Cannot remove {$quantity} pieces from inventory row {$inventory->inventory_id}.");
         }
 
-        // 1. Lower the stock and refresh its status (one UPDATE of the inventory row).
-        $inventory->quantity_on_hand -= $quantity;
+        $this->move($inventory, -$quantity, 'SALE', $user);
+    }
+
+    // Void a Sale (docs/04-business-rules.md): put $quantity pieces back into the SAME batch they were sold from.
+    public function returnForVoid(Inventory $inventory, int $quantity, UserAccount $user): void
+    {
+        if ($quantity <= 0) {
+            throw new RuntimeException("Cannot return {$quantity} pieces to inventory row {$inventory->inventory_id}.");
+        }
+
+        $this->move($inventory, $quantity, 'VOID', $user);
+    }
+
+    // The three steps of every stock change. $change is negative for a sale, positive for a void.
+    private function move(Inventory $inventory, int $change, string $type, UserAccount $user): void
+    {
+        // 1. Change the stock and refresh its status (one UPDATE of the inventory row).
+        $inventory->quantity_on_hand += $change;
         $this->status->refresh($inventory);
 
-        // 2. Write the movement: negative quantity, type SALE.
+        // 2. Write the movement (SALE: negative, VOID: positive).
         InventoryHistory::create([
             'inventory_id' => $inventory->inventory_id,
             'batch_id' => $inventory->batch_id,
             'user_id' => $user->user_id,
-            'quantity_change' => -$quantity,
-            'transaction_type' => 'SALE',
+            'quantity_change' => $change,
+            'transaction_type' => $type,
             'transaction_datetime' => now(),
         ]);
 
