@@ -81,6 +81,8 @@ h1, h2, h3, h4, h5, h6, .btn {
     align-items: center;
     justify-content: center;
     gap: 8px;
+    /* Disabled buttons (any kind): faded. Bootstrap also sets pointer-events: none, so there is no pointer cursor. */
+    --bs-btn-disabled-opacity: 0.45;
 }
 .btn-primary {
     --bs-btn-bg: var(--jr-primary);
@@ -93,10 +95,12 @@ h1, h2, h3, h4, h5, h6, .btn {
     --bs-btn-active-border-color: var(--jr-primary-dark);
     --bs-btn-disabled-bg: var(--jr-primary);
     --bs-btn-disabled-border-color: var(--jr-primary);
+    --bs-btn-disabled-color: var(--jr-primary-text);
     --bs-btn-focus-shadow-rgb: 209, 23, 126;
 }
+/* Outline buttons: pink border, dark pink text, white fill (also when disabled, never Bootstrap blue). */
 .btn-outline-primary {
-    --bs-btn-color: var(--jr-primary);
+    --bs-btn-color: var(--jr-text-strong);
     --bs-btn-bg: var(--jr-panel);
     --bs-btn-border-color: var(--jr-primary);
     --bs-btn-hover-bg: var(--jr-fill);
@@ -105,6 +109,9 @@ h1, h2, h3, h4, h5, h6, .btn {
     --bs-btn-active-bg: var(--jr-fill);
     --bs-btn-active-color: var(--jr-text-strong);
     --bs-btn-active-border-color: var(--jr-primary);
+    --bs-btn-disabled-color: var(--jr-text-strong);
+    --bs-btn-disabled-bg: var(--jr-panel);
+    --bs-btn-disabled-border-color: var(--jr-primary);
     --bs-btn-focus-shadow-rgb: 209, 23, 126;
 }
 .btn-danger {
@@ -573,9 +580,13 @@ h1, h2, h3, h4, h5, h6, .btn {
     flex: 1 1 0;
     min-height: 56px;
     border-radius: 14px;
-    border-color: var(--jr-danger);
-    background: var(--jr-panel);
-    color: var(--jr-danger);
+    /* Colors through Bootstrap's variables, so the disabled state (empty order) keeps them, just faded. */
+    --bs-btn-border-color: var(--jr-danger);
+    --bs-btn-bg: var(--jr-panel);
+    --bs-btn-color: var(--jr-danger);
+    --bs-btn-disabled-border-color: var(--jr-danger);
+    --bs-btn-disabled-bg: var(--jr-panel);
+    --bs-btn-disabled-color: var(--jr-danger);
     font-family: var(--jr-font-body);
     font-weight: 700;
 }
@@ -722,4 +733,70 @@ h1, h2, h3, h4, h5, h6, .btn {
     .jr-receipt-thanks { border-top: 1px dashed #000000; }
     .jr-receipt-shop,
     .jr-receipt-total { color: #000000; }
+}
+
+/* ---------- 9. Inventory screen (mockup: docs/design/05-inventory-owner.png) ---------- */
+.jr-inv { display: flex; flex-direction: column; gap: 20px; }
+
+/* Title row: "Inventory" on the left, page buttons on the right */
+.jr-inv-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
+.jr-inv-head-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+
+/* Summary cards (Low stock, Out of stock, Near expiry) */
+.jr-inv-cards { display: flex; flex-wrap: wrap; gap: 16px; }
+.jr-inv-card {
+    flex: 1 1 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: var(--jr-panel);
+    border: 2px solid var(--jr-border);
+    border-radius: 18px;
+    padding: 16px 18px;
+}
+.jr-inv-card-count { font-family: var(--jr-font-head); font-weight: 700; font-size: 28px; line-height: 1.2; }
+.jr-inv-card-first { font-size: 15px; color: var(--jr-muted); }
+
+/* Search box (white, round) and the Clear button next to it */
+.jr-inv-search { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 0; }
+.jr-inv-search-box { flex: 1 1 280px; max-width: 480px; }
+.jr-inv-search .jr-inv-search-input { background: var(--jr-panel); padding-right: 20px; }
+.jr-btn-clear {
+    background: var(--jr-panel);
+    border: 2px solid var(--jr-border);
+    color: var(--jr-text-strong);
+    padding: 0 20px;
+}
+.jr-btn-clear:hover,
+.jr-btn-clear:active { background: var(--jr-fill); border-color: var(--jr-primary); color: var(--jr-text-strong); }
+
+/* Table card: white, rounded, scrolls sideways on narrow screens */
+.jr-inv-table-wrap {
+    background: var(--jr-panel);
+    border: 2px solid var(--jr-border);
+    border-radius: 20px;
+    overflow-x: auto;
+}
+.jr-inv-table { min-width: 860px; }
+.jr-inv-table > tbody > tr:last-child > td { border-bottom: 0; }
+.jr-inv-table > tbody > tr[hidden] { display: none; }
+.jr-inv-name { display: block; font-weight: 700; }
+.jr-inv-batch { display: block; font-size: 13px; color: var(--jr-muted); }
+.jr-inv-expired { margin-left: 6px; font-size: 14px; font-weight: 700; color: var(--jr-error); }
+.jr-badge-table { font-size: 14px; }
+
+/* Row buttons: Update stock, Update price, trash (44px touch targets) */
+.jr-inv-actions { display: flex; gap: 8px; }
+.jr-btn-row { min-height: 44px; height: 44px; padding: 0 14px; font-size: 15px; white-space: nowrap; }
+.jr-btn-trash {
+    width: 44px; height: 44px; min-height: 44px;
+    padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    /* Set through Bootstrap's variables so the disabled state keeps the same colors (just faded). */
+    --bs-btn-bg: var(--jr-panel);
+    --bs-btn-border-color: var(--jr-border);
+    --bs-btn-color: var(--jr-danger);
+    --bs-btn-disabled-bg: var(--jr-panel);
+    --bs-btn-disabled-border-color: var(--jr-border);
+    --bs-btn-disabled-color: var(--jr-danger);
 }

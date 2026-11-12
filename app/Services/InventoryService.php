@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Inventory;
 use App\Models\InventoryHistory;
 use App\Models\UserAccount;
+use Illuminate\Support\Collection;
 use RuntimeException;
 
 // The ONLY place that changes inventory.quantity_on_hand (docs/08-architecture.md, rule 2),
@@ -41,5 +42,65 @@ class InventoryService
 
         // 3. Open or close alerts for this batch to match the new status.
         $this->alerts->sync($inventory);
+    }
+
+    /**
+     * Inventory screen (screen 9): one row per batch, because stock and expiry are kept per batch.
+     * READ ONLY: nothing is saved here. The status is the value stored in inventory.stock_status.
+     * Sorted by product name, then earliest expiry first.
+     */
+    public function batchRows(): Collection
+    {
+        return Inventory::with('batch.product.supplier')
+            ->get()
+            ->map(fn (Inventory $inventory) => [
+                'inventory_id' => $inventory->inventory_id,
+                'product_name' => $inventory->batch->product->product_name,
+                'product_number' => $inventory->batch->product->product_number,
+                'batch_number' => $inventory->batch->batch_number,
+                'unit_price' => (float) $inventory->batch->product->unit_price,
+                'quantity' => (int) $inventory->quantity_on_hand,
+                'reorder_level' => (int) $inventory->reorder_level,
+                'supplier' => $inventory->batch->product->supplier?->supplier_name,
+                'status' => $inventory->stock_status,
+                'expiry_date' => $inventory->batch->expiry_date,
+                'expired' => $this->status->isExpired($inventory->batch->expiry_date),
+            ])
+            ->sortBy([
+                ['product_name', 'asc'],
+                fn ($a, $b) => $a['expiry_date'] <=> $b['expiry_date'],
+            ])
+            ->values();
+    }
+
+    /**
+     * The three summary cards: how many batches are LOW STOCK, OUT OF STOCK and NEAR EXPIRY,
+     * plus the first one of each (in the table order) as a short example line.
+     */
+    public function summary(Collection $rows): array
+    {
+        $cards = [];
+
+        foreach ([StockStatusService::LOW, StockStatusService::OUT, StockStatusService::NEAR] as $status) {
+            $matching = $rows->where('status', $status);
+            $first = $matching->first();
+
+            $cards[$status] = [
+                'count' => $matching->count(),
+                'first' => $first ? $this->summaryLine($status, $first) : 'None',
+            ];
+        }
+
+        return $cards;
+    }
+
+    // Example line under the count, like the mockup: "Vitamins · 2 left (reorder at 5)".
+    private function summaryLine(string $status, array $row): string
+    {
+        return match ($status) {
+            StockStatusService::LOW => "{$row['product_name']} · {$row['quantity']} left (reorder at {$row['reorder_level']})",
+            StockStatusService::OUT => "{$row['product_name']} · 0 left",
+            default => "{$row['product_name']} · expires {$row['expiry_date']->format('m/d/Y')}",
+        };
     }
 }

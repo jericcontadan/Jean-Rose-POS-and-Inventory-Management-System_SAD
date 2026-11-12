@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HealthController;
+use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PosController;
 use App\Http\Controllers\ReceiptController;
@@ -42,8 +43,10 @@ Route::middleware('auth')->group(function () {
 
 // OWNER only. can:owner uses the Gate in AppServiceProvider and returns 403 for the cashier.
 Route::middleware(['auth', 'can:owner'])->group(function () {
-    // Placeholders until Steps 5, 4 and 6 build these screens.
+    // Inventory (read only for now): one row per batch, summary cards, live search.
+    Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
+
+    // Placeholders until Steps 5 and 6 build these screens.
     Route::view('/sales', 'placeholder', ['title' => 'Sales Records', 'step' => 5])->name('sales.index');
-    Route::view('/inventory', 'placeholder', ['title' => 'Inventory', 'step' => 4])->name('inventory.index');
     Route::view('/audit-log', 'placeholder', ['title' => 'Audit Log', 'step' => 6])->name('audit.index');
 });
