@@ -16,7 +16,9 @@ Laravel 13 (PHP 8.3), MySQL 8, Blade + Bootstrap 5 (CDN), Laravel Excel, Gmail S
    composer install
    copy .env.example .env
    php artisan key:generate
+   php artisan storage:link
    ```
+   `storage:link` makes uploaded product images visible: it links `public/storage` to `storage/app/public`. Run it once.
 3. In MySQL Workbench (as root) run `docs/sql/jeanrose_pos.sql` (all 12 tables; it erases existing data), then
    `docs/sql/sample_data.sql`. If you already have a database with data, run `docs/sql/jeanrose_pos_upgrade.sql` instead. Create the app user:
    ```sql

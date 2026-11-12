@@ -42,7 +42,10 @@ If one sale needs more than one batch, split it into several `sale_item` rows (o
 - Price change: update `product.unit_price` only; past sales keep their copied `unit_price`;
   audit_log INVENTORY_UPDATE with `details = 'Price Serum: 120.00 to 125.00'`.
 - Add product: validate, insert `product`, first `product_batch`, and `inventory` row; audit_log INVENTORY_UPDATE.
-- Delete row: only if the product has no `sale_item` or `inventory_history`; otherwise refuse with a message.
+- Delete row (trash on an Inventory row): checked per batch. A batch can be deleted only if it has no `sale_item` and no
+  `inventory_history` rows; otherwise refuse with "This batch has sales or history and cannot be deleted." In one transaction
+  delete the batch's `alert_notification` rows, then its `inventory` row, then the `product_batch`. Deleting the last batch of a
+  product also deletes the product. audit_log INVENTORY_UPDATE (module INVENTORY).
 
 ## Audit log
 Write a row for: login (LOGIN, SALES), pay (SALE, SALES), void (VOID, SALES), restock, price change, add/edit/delete product,

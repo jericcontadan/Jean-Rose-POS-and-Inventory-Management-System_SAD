@@ -36,4 +36,11 @@ class AlertService
             ]);
         }
     }
+
+    // Delete a batch (trash on the Inventory page): its alert rows must go first,
+    // because alert_notification.batch_id points to the batch (foreign key RESTRICT).
+    public function deleteForBatch(int $batchId): void
+    {
+        AlertNotification::where('batch_id', $batchId)->delete();
+    }
 }
