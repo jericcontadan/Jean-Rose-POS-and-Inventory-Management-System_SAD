@@ -2,9 +2,9 @@
 
 namespace App\Providers;
 
-use App\Models\AlertNotification;
 use App\Models\Sale;
 use App\Models\UserAccount;
+use App\Services\AlertService;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -37,9 +37,10 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('view-receipt', fn (UserAccount $user, Sale $sale) => $user->role === 'OWNER' || (int) $sale->user_id === (int) $user->user_id);
 
         // Give the header the number of open alerts, so the Blade view runs no query itself.
+        // Same AlertService::openCount() as the "Alerts (N)" title, so both numbers always match.
         View::composer('partials.header', function ($view) {
             $view->with('openAlertCount', Auth::check()
-                ? AlertNotification::whereNull('resolved_at')->count()
+                ? app(AlertService::class)->openCount()
                 : 0);
         });
     }

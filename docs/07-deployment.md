@@ -17,12 +17,16 @@ Laragon is only for laptops. The owner never installs anything.
 6. `composer install --no-dev --optimize-autoloader`, `php artisan key:generate`, `php artisan config:cache route:cache view:cache`,
    `php artisan storage:link`, folder permissions for `storage` and `bootstrap/cache`.
    `storage:link` makes uploaded product images visible: it links `public/storage` to `storage/app/public`. Run it once per server.
-7. Nginx site pointing to `public/`, then `certbot --nginx`. Add the cron for the scheduler:
+7. Nginx site pointing to `public/`, then `certbot --nginx`.
+8. Scheduler cron (needed for the daily jobs in `routes/console.php`: `pos:refresh-stock-status` at 06:00 and
+   `pos:send-daily-alerts` at 08:00, Asia/Manila). Without it the stock status refresh and the owner's alert email never run.
+   Run `crontab -e` as the web server user (the one that owns `storage/`) and add:
    `* * * * * cd /var/www/jeanrose-pos && php artisan schedule:run >> /dev/null 2>&1`
-8. `deploy.sh` for every update (git pull, composer install, cache commands, reload php-fpm, check `/health`).
+   Check with `php artisan schedule:list` (shows both jobs and their next run time).
+9. `deploy.sh` for every update (git pull, composer install, cache commands, reload php-fpm, check `/health`).
    GitHub Actions: run tests on every push; deploy by SSM (or manual `deploy.sh`).
-9. Daily database backup kept 7 days plus nightly dump to S3. Test one restore.
-10. CloudWatch alarms with email alerts.
+10. Daily database backup kept 7 days plus nightly dump to S3. Test one restore.
+11. CloudWatch alarms with email alerts.
 
 ## Before go-live
 Delete demo and test accounts and sample data. Create the real owner account with a password the owner sets. Change all passwords and keys.

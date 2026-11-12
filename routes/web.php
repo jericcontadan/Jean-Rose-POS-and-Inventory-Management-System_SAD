@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AlertController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HealthController;
@@ -40,8 +41,8 @@ Route::middleware('auth')->group(function () {
     // Receipt of a saved sale (a cashier sees only their own; checked in ReceiptController).
     Route::get('/receipts/{sale}', [ReceiptController::class, 'show'])->name('receipts.show');
 
-    // Placeholder until Step 8 builds the Alerts screen (cashier and owner both use it).
-    Route::view('/alerts', 'placeholder', ['title' => 'Alerts', 'step' => 8])->name('alerts.index');
+    // Alerts: the open stock and expiry alerts (cashier and owner both use it).
+    Route::get('/alerts', [AlertController::class, 'index'])->name('alerts.index');
 });
 
 // OWNER only. can:owner uses the Gate in AppServiceProvider and returns 403 for the cashier.
