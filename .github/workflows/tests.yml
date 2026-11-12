@@ -1,0 +1,66 @@
+# Runs our Laravel tests on every push and pull request (docs/06-testing.md).
+# Tests only. No deployment.
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    # A throwaway MySQL 8 server that only lives while this job runs.
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          # Throwaway password used only inside GitHub Actions. NOT a real password.
+          MYSQL_ROOT_PASSWORD: ci_root_password
+        ports:
+          - 3306:3306
+        # Wait until MySQL is ready before the steps start.
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -pci_root_password"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      # 1. Get our code.
+      - uses: actions/checkout@v4
+
+      # 2. Install PHP 8.3 with the extensions Laravel and MySQL need.
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql, mbstring, zip
+          coverage: none
+
+      # 3. Install PHP packages from composer.lock.
+      - name: Install Composer packages
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      # 4. Make a CI-only .env from the example file and give it an app key.
+      - name: Prepare .env
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      # 5. Build the empty test database from our SQL script (no migrations).
+      #    The script ends with a GRANT to 'pos_user'@'localhost', and MySQL 8 refuses
+      #    a GRANT to a user that does not exist. So we first create that user LOCKED
+      #    (nobody can log in as it). The tests themselves connect as root.
+      - name: Create test database
+        run: |
+          mysql -h 127.0.0.1 -P 3306 -u root -pci_root_password \
+            -e "CREATE USER 'pos_user'@'localhost' ACCOUNT LOCK;"
+          mysql -h 127.0.0.1 -P 3306 -u root -pci_root_password < docs/sql/jeanrose_pos_test.sql
+
+      # 6. Run the tests against the test database.
+      - name: Run tests
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: jeanrose_pos_test
+          DB_USERNAME: root
+          DB_PASSWORD: ci_root_password
+        run: php artisan test
