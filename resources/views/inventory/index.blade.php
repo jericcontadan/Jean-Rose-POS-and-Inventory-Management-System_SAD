@@ -1,7 +1,8 @@
 {{--
     Inventory (screen 9), OWNER only. Mockup: docs/design/05-inventory-owner.png.
     One table row per batch (stock and expiry are kept per batch). The status pill is inventory.stock_status as stored.
-    READ ONLY in this step: every action button is shown but disabled until its own build step.
+    Update stock and Update price work (screen 10). Add product, Import, Export and the trash are shown but disabled
+    until their own build step.
     All data comes from InventoryController / InventoryService; this view only shows it.
 --}}
 @extends('layouts.app')
@@ -89,11 +90,12 @@
                                 @endif
                             </td>
                             <td>
-                                {{-- Built in later steps (9 Update Stock and Price): shown, not working yet. --}}
+                                {{-- Update stock (this batch) and Update price (this product) open their own page.
+                                     The trash (Delete Row) is built in a later step: shown, not working yet. --}}
                                 <div class="jr-inv-actions">
-                                    <button type="button" disabled
-                                            class="btn jr-btn-row {{ in_array($row['status'], ['LOW STOCK', 'OUT OF STOCK']) ? 'btn-primary' : 'btn-outline-primary' }}">Update stock</button>
-                                    <button type="button" class="btn btn-outline-primary jr-btn-row" disabled>Update price</button>
+                                    <a href="{{ route('inventory.stock.edit', $row['inventory_id']) }}"
+                                       class="btn jr-btn-row {{ in_array($row['status'], ['LOW STOCK', 'OUT OF STOCK']) ? 'btn-primary' : 'btn-outline-primary' }}">Update stock</a>
+                                    <a href="{{ route('products.price.edit', $row['product_id']) }}" class="btn btn-outline-primary jr-btn-row">Update price</a>
                                     <button type="button" class="btn jr-btn-trash" disabled aria-label="Delete {{ $row['product_name'] }} batch {{ $row['batch_number'] }}">
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

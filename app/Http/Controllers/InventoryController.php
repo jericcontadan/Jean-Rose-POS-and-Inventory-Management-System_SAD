@@ -2,13 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StockRequest;
+use App\Models\Inventory;
 use App\Services\InventoryService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Throwable;
 
-// Inventory screen (screen 9, FR-06 / FR-07). OWNER only (route group can:owner).
-// Read only in this step: Update stock, Update price, Delete, Add product, Import and Export come later.
+// Inventory screen (screen 9, FR-06 / FR-07) and Update stock (screen 10). OWNER only (route group can:owner).
+// Thin controller: the restock rules live in InventoryService::restock().
+// Delete, Add product, Import and Export come later.
 class InventoryController extends Controller
 {
     public function __construct(private InventoryService $inventory)
@@ -34,6 +39,31 @@ class InventoryController extends Controller
             'summary' => $this->inventory->summary($rows), // always the whole inventory, not only the search result
             'search' => $search,
         ]);
+    }
+
+    // GET /inventory/{inventory}/stock : the Update stock card for one batch.
+    public function editStock(Inventory $inventory): View
+    {
+        return view('inventory.stock', [
+            'inventory' => $inventory->load('batch.product'),
+        ]);
+    }
+
+    // PUT /inventory/{inventory}/stock : "Save stock". StockRequest has already checked the quantity.
+    public function updateStock(StockRequest $request, Inventory $inventory): RedirectResponse
+    {
+        try {
+            $saved = $this->inventory->restock($request->user(), $inventory, (int) $request->validated('quantity'));
+        } catch (Throwable $e) {
+            report($e); // write the real error to the log for us, show a simple message to the owner
+            return redirect()->route('inventory.stock.edit', $inventory)->withInput()
+                ->with('error', 'Save failed. Nothing was changed. Please try again.');
+        }
+
+        $saved->load('batch.product');
+
+        return redirect()->route('inventory.index')->with('success',
+            "Stock of {$saved->batch->product->product_name} (batch {$saved->batch->batch_number}) is now {$saved->quantity_on_hand}.");
     }
 
     // Same rule as the JavaScript in inventory/index.blade.php: product name, product number,
