@@ -1142,3 +1142,70 @@ h1, h2, h3, h4, h5, h6, .btn {
     background: var(--jr-fill);
     font-size: 15px;
 }
+
+/* ---------- Alerts page (mockup 08-alerts-daily-email.png, left card + "Who gets what") ---------- */
+.jr-alerts-page {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    align-items: flex-start;
+}
+.jr-alerts-card {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex: 0 1 560px;
+    min-width: 0;
+}
+.jr-alerts-side { flex-basis: 360px; }
+.jr-alerts-title { font-family: var(--jr-font-head); font-weight: 700; font-size: 24px; margin: 0; }
+.jr-alerts-side-title { font-family: var(--jr-font-head); font-weight: 700; font-size: 22px; margin: 0; }
+.jr-alerts-group {
+    font-family: var(--jr-font-head);
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--jr-muted);
+    margin: 6px 0 0;
+}
+/* One alert (or one "who gets what" line): pink tile */
+.jr-alert-tile {
+    background: var(--jr-bg);
+    border-radius: 16px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.jr-alert-line { font-size: 16px; font-weight: 700; overflow-wrap: anywhere; }
+.jr-alert-note { font-size: 14px; color: var(--jr-muted); }
+.jr-alert-empty { margin: 0; font-weight: 600; }
+.jr-alert-view {
+    align-self: flex-start;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 20px;
+    font-weight: 700;
+}
+.jr-who-role { font-weight: 700; color: var(--jr-primary); }
+
+/* Below 992px the two cards stack */
+@media (max-width: 991.98px) {
+    .jr-alerts-page { flex-direction: column; align-items: stretch; }
+    .jr-alerts-card { flex-basis: auto; }
+}
+/* Square 44px close (X) button, top right of the Alerts card */
+.jr-icon-btn {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    border-radius: var(--jr-radius);
+    border: 2px solid var(--jr-border);
+    background: var(--jr-panel);
+    color: var(--jr-text-strong);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.jr-icon-btn:active { border-color: var(--jr-primary); color: var(--jr-text-strong); }
