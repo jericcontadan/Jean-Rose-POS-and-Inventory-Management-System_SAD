@@ -8,6 +8,8 @@ use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\UserAccount;
+use Carbon\CarbonInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 // Pay Now (docs/04-business-rules.md, "Pay Now"). Everything runs in ONE DB::transaction():
@@ -123,6 +125,42 @@ class SaleService
 
             return $sale;
         });
+    }
+
+    // ---------- Sales Records (screen 7): READ ONLY, these two methods never write ----------
+
+    // The sales of one day (by sale_datetime), oldest first, 50 sales per page.
+    // Paginated by SALE, not by item row, so one receipt is never split over two pages.
+    public function salesForDate(CarbonInterface $date, int $perPage = 50): LengthAwarePaginator
+    {
+        return Sale::with(['cashier', 'items.batch.product.category'])
+            ->whereBetween('sale_datetime', $this->dayRange($date))
+            ->orderBy('sale_datetime')
+            ->orderBy('sale_id')
+            ->paginate($perPage)
+            ->withQueryString(); // keep ?date= on the page links
+    }
+
+    // Daily summary for the WHOLE day (not only the page shown). CANCELLED (voided) sales are counted
+    // but never added to the money totals.
+    public function dailySummary(CarbonInterface $date): array
+    {
+        $day = Sale::whereBetween('sale_datetime', $this->dayRange($date));
+        $paid = (clone $day)->where('sale_status', 'PAID');
+
+        return [
+            'paid_count' => (clone $paid)->count(),
+            'cancelled_count' => (clone $day)->where('sale_status', 'CANCELLED')->count(),
+            'total_sales' => round((float) (clone $paid)->sum('total_amount'), 2),
+            // Money taken off by near-expiry discounts: subtotal (full price) minus total paid.
+            'total_discount' => round((float) (clone $paid)->sum(DB::raw('subtotal - total_amount')), 2),
+        ];
+    }
+
+    // 00:00:00 to 23:59:59 of that day (app timezone Asia/Manila, the same time sale_datetime is saved in).
+    private function dayRange(CarbonInterface $date): array
+    {
+        return [$date->copy()->startOfDay(), $date->copy()->endOfDay()];
     }
 
     // Load the products with their batches, then lock their inventory rows (SELECT ... FOR UPDATE)
