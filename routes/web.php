@@ -6,6 +6,7 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PosController;
 use App\Http\Controllers\ReceiptController;
+use App\Http\Controllers\SalesRecordController;
 use Illuminate\Support\Facades\Route;
 
 // Public health check (no login needed).
@@ -46,7 +47,9 @@ Route::middleware(['auth', 'can:owner'])->group(function () {
     // Inventory (read only for now): one row per batch, summary cards, live search.
     Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
 
-    // Placeholders until Steps 5 and 6 build these screens.
-    Route::view('/sales', 'placeholder', ['title' => 'Sales Records', 'step' => 5])->name('sales.index');
+    // Sales Records (read only for now): date filter, sales grouped by receipt, daily summary, Close summary.
+    Route::get('/sales', [SalesRecordController::class, 'index'])->name('sales.index');
+
+    // Placeholder until Step 6 builds this screen.
     Route::view('/audit-log', 'placeholder', ['title' => 'Audit Log', 'step' => 6])->name('audit.index');
 });

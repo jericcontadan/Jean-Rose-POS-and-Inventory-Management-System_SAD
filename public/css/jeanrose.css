@@ -800,3 +800,79 @@ h1, h2, h3, h4, h5, h6, .btn {
     --bs-btn-disabled-border-color: var(--jr-border);
     --bs-btn-disabled-color: var(--jr-danger);
 }
+
+/* ---------- 10. Sales Records (mockup: docs/design/07-sales-records-void.png, left part) ---------- */
+.jr-sales { display: flex; flex-direction: column; gap: 20px; }
+
+/* Title on the left; date, Export and Close on the right (bottom-aligned like the mockup) */
+.jr-sales-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; }
+.jr-sales-head-actions { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
+.jr-sales-date-form { display: flex; align-items: flex-end; gap: 8px; margin: 0; }
+.jr-sales-date-field { display: flex; flex-direction: column; gap: 6px; }
+.jr-sales-date-label { font-size: 15px; font-weight: 700; }
+.jr-sales-head .jr-sales-date { width: 190px; background: var(--jr-panel); }
+
+/* Table card: white, rounded, scrolls sideways on narrow screens */
+.jr-sales-table-wrap {
+    background: var(--jr-panel);
+    border: 2px solid var(--jr-border);
+    border-radius: 20px;
+    overflow-x: auto;
+}
+.jr-sales-table { min-width: 860px; margin: 0; }
+.jr-sales-table > thead th { color: #5C1B43; font-size: 14px; }
+
+/* Receipt header row of each sale: S-0001, time, cashier, Receipt / Void */
+.jr-sales-table .jr-sales-sale-row > td { background: var(--jr-bg); padding-top: 8px; padding-bottom: 8px; }
+.jr-sales-receipt { font-family: var(--jr-font-head); font-weight: 700; margin-right: 8px; }
+.jr-sales-meta { color: var(--jr-muted); font-size: 15px; margin-right: 6px; }
+.jr-sales-actions { display: flex; gap: 8px; }
+.jr-btn-void {
+    --bs-btn-bg: var(--jr-panel);
+    --bs-btn-border-color: var(--jr-danger);
+    --bs-btn-color: var(--jr-danger);
+    --bs-btn-disabled-bg: var(--jr-panel);
+    --bs-btn-disabled-border-color: var(--jr-danger);
+    --bs-btn-disabled-color: var(--jr-danger);
+}
+
+/* Voided (CANCELLED) sale: grey and faded, with a VOIDED pill and the reason */
+.jr-sales-voided > tr > td { color: #8C7A85; background: #F6F2F4; }
+.jr-sales-table .jr-sales-voided > .jr-sales-sale-row > td { background: #EFE8EC; }
+.jr-badge-voided {
+    display: inline-block;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 12px;
+    margin-right: 6px;
+    background: #6E5A66;
+    color: #FFFFFF;
+}
+.jr-sales-reason { font-size: 15px; font-style: italic; }
+
+/* Daily summary under the table (right side, like the mockup's Total sales box) */
+.jr-sales-pages .pagination { margin: 0; justify-content: flex-end; }
+.jr-sales-pages .page-link { min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
+.jr-sales-summary {
+    align-self: flex-end;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 12px 28px;
+    background: var(--jr-fill);
+    border-radius: 16px;
+    padding: 12px 20px;
+    color: #5C1B43;
+    font-size: 15px;
+    font-weight: 700;
+}
+.jr-sales-summary strong { font-size: 20px; margin-left: 4px; color: var(--jr-text); }
+.jr-sales-total { font-family: var(--jr-font-head); font-weight: 700; font-size: 26px; color: var(--jr-primary); margin-left: 8px; }
+
+/* Close Sales box */
+.jr-sales-close-date { color: var(--jr-muted); font-weight: 700; margin-top: -12px; }
+.jr-sales-close-list { display: flex; flex-direction: column; gap: 8px; }
+.jr-sales-close-list > div { display: flex; justify-content: space-between; font-size: 17px; }
+.jr-sales-close-list dt { font-weight: 600; color: var(--jr-muted); }
+.jr-sales-close-list dd { margin: 0; font-weight: 700; }
