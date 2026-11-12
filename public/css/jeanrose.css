@@ -876,3 +876,83 @@ h1, h2, h3, h4, h5, h6, .btn {
 .jr-sales-close-list > div { display: flex; justify-content: space-between; font-size: 17px; }
 .jr-sales-close-list dt { font-weight: 600; color: var(--jr-muted); }
 .jr-sales-close-list dd { margin: 0; font-weight: 700; }
+
+/* ---------- 11. Audit Log (mockup: docs/design/09-audit-log-export.png) ---------- */
+.jr-audit { display: flex; flex-direction: column; gap: 20px; }
+
+/* Left part (filters + table) is wide; the Export card is 320-400px. They wrap under each other when there is no room. */
+.jr-audit-layout { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+.jr-audit-main { flex: 999 1 620px; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+
+/* Filter row: Date (From to To), User, Action, Apply, Export Excel; bottom-aligned like the mockup */
+.jr-audit-filters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; margin: 0; }
+.jr-audit-field { display: flex; flex-direction: column; gap: 6px; border: 0; margin: 0; padding: 0; min-width: 0; }
+.jr-audit-label { font-size: 15px; font-weight: 700; margin: 0; padding: 0; float: none; width: auto; }
+.jr-audit-dates { display: flex; align-items: center; gap: 8px; }
+.jr-audit-to { color: var(--jr-muted); font-weight: 700; }
+.jr-audit-filters .form-control,
+.jr-audit-filters .form-select { background-color: var(--jr-panel); }
+.jr-audit-date { width: 165px; }
+.jr-audit-select { width: 160px; }
+.jr-audit-select-wide { width: 200px; }
+
+/* Table card: white, rounded, scrolls sideways on narrow screens */
+.jr-audit-table-wrap {
+    background: var(--jr-panel);
+    border: 2px solid var(--jr-border);
+    border-radius: 20px;
+    overflow-x: auto;
+}
+.jr-audit-table { min-width: 760px; margin: 0; }
+.jr-audit-table > tbody > tr:last-child > td { border-bottom: 0; }
+
+/* Action badges (colours from the mockup) */
+.jr-audit-badge {
+    display: inline-block;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 4px 10px;
+    white-space: nowrap;
+}
+.jr-audit-login     { background: var(--jr-fill);           color: var(--jr-text-strong); }
+.jr-audit-sale      { background: var(--jr-ok-bg);          color: var(--jr-ok-text); }
+.jr-audit-void      { background: var(--jr-danger);         color: #FFFFFF; }
+.jr-audit-inventory { background: var(--jr-near-expiry-bg); color: var(--jr-near-expiry-text); }
+
+.jr-audit-pages .pagination { margin: 0; justify-content: flex-end; }
+.jr-audit-pages .page-link { min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
+.jr-audit-note { font-size: 14px; color: var(--jr-muted); }
+
+/* Export to Excel card (right). Shown but disabled until the Excel export step. */
+.jr-audit-export {
+    flex: 1 1 320px;
+    max-width: 400px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.jr-audit-export-title { font-family: var(--jr-font-head); font-weight: 700; font-size: 22px; margin: 0; }
+.jr-audit-export-what { display: flex; flex-direction: column; gap: 8px; border: 0; margin: 0; padding: 0; }
+.jr-audit-export-what > legend { padding-bottom: 8px; }
+.jr-audit-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 48px;
+    padding: 0 14px;
+    border: 2px solid var(--jr-border);
+    border-radius: 14px;
+    font-weight: 700;
+}
+.jr-audit-option .form-check-input { width: 20px; height: 20px; margin: 0; }
+.jr-audit-option-on { border-color: var(--jr-primary); background: var(--jr-fill); }
+.jr-audit-export-dates { display: flex; gap: 12px; }
+.jr-audit-export-dates > .jr-audit-field { flex: 1 1 0; }
+.jr-audit-download { min-height: 56px; border-radius: 14px; font-size: 17px; }
+
+/* Below 992px the Export card takes the full width under the table */
+@media (max-width: 991.98px) {
+    .jr-audit-export { max-width: none; }
+}
