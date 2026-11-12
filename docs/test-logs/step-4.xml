@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="C:\laragon\www\jeanrose-pos\phpunit.xml" tests="77" assertions="375" errors="0" failures="0" skipped="0" time="9.121406">
+    <testsuite name="Unit" tests="13" assertions="37" errors="0" failures="0" skipped="0" time="0.091550">
+      <testsuite name="Tests\Unit\ExampleTest" file="C:\laragon\www\jeanrose-pos\tests\Unit\ExampleTest.php" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.003122">
+        <testcase name="test_that_true_is_true" file="C:\laragon\www\jeanrose-pos\tests\Unit\ExampleTest.php" line="12" class="Tests\Unit\ExampleTest" classname="Tests.Unit.ExampleTest" assertions="1" time="0.003122"/>
+      </testsuite>
+      <testsuite name="Tests\Unit\ModelsTest" file="C:\laragon\www\jeanrose-pos\tests\Unit\ModelsTest.php" tests="12" assertions="36" errors="0" failures="0" skipped="0" time="0.088428">
+        <testsuite name="Tests\Unit\ModelsTest::test_model_maps_table_and_primary_key" tests="11" assertions="33" errors="0" failures="0" skipped="0" time="0.081518">
+          <testcase name="test_model_maps_table_and_primary_key with data set #0" file="C:\laragon\www\jeanrose-pos\tests\Unit\ModelsTest.php" line="41" class="Tests\Unit\ModelsTest" classname="Tests.Unit.ModelsTest" assertions="3" time="0.048912"/>
+          <testcase name="test_model_maps_table_and_primary_key with data set #1" file="C:\laragon\www\jeanrose-pos\tests\Unit\ModelsTest.php" line="41" class="Tests\Unit\ModelsTest" classname="Tests.Unit.ModelsTest" assertions="3" time="0.003018"/>
+          <testcase name="test_model_maps_table_and_primary_key with data set #2" file="C:\laragon\www\jeanrose-pos\tests\Unit\ModelsTest.php" line="41" class="Tests\Unit\ModelsTest" classname="Tests.Unit.ModelsTest" assertions="3" time="0.003778"/>
+          <testcase name="test_model_maps_table_and_primary_key with data set #3" file="C:\laragon\www\jeanrose-pos\tests\Unit\ModelsTest.php" line="41" class="Tests\Unit\ModelsTest" classname="Tests.Unit.ModelsTest" assertions="3" time="0.004091"/>
+          <testcase name="test_model_maps_table_and_primary_key with data set #4" file="C:\laragon\www\jeanrose-pos\tests\Unit\ModelsTest.php" line="41" class="Tests\Unit\ModelsTest" classname="Tests.Unit.ModelsTest" assertions="3" time="0.003311"/>
+          <testcase name="test_model_maps_table_and_primary_key with data set #5" file="C:\laragon\www\jeanrose-pos\tests\Unit\ModelsTest.php" line="41" class="Tests\Unit\ModelsTest" classname="Tests.Unit.ModelsTest" assertions="3" time="0.003023"/>
+          <testcase name="test_model_maps_table_and_primary_key with data set #6" file="C:\laragon\www\jeanrose-pos\tests\Unit\ModelsTest.php" line="41" class="Tests\Unit\ModelsTest" classname="Tests.Unit.ModelsTest" assertions="3" time="0.003114"/>
+          <testcase name="test_model_maps_table_and_primary_key with data set #7" file="C:\laragon\www\jeanrose-pos\tests\Unit\ModelsTest.php" line="41" class="Tests\Unit\ModelsTest" classname="Tests.Unit.ModelsTest" assertions="3" time="0.003160"/>
+          <testcase name="test_model_maps_table_and_primary_key with data set #8" file="C:\laragon\www\jeanrose-pos\tests\Unit\ModelsTest.php" line="41" class="Tests\Unit\ModelsTest" classname="Tests.Unit.ModelsTest" assertions="3" time="0.003097"/>
+          <testcase name="test_model_maps_table_and_primary_key with data set #9" file="C:\laragon\www\jeanrose-pos\tests\Unit\ModelsTest.php" line="41" class="Tests\Unit\ModelsTest" classname="Tests.Unit.ModelsTest" assertions="3" time="0.003084"/>
+          <testcase name="test_model_maps_table_and_primary_key with data set #10" file="C:\laragon\www\jeanrose-pos\tests\Unit\ModelsTest.php" line="41" class="Tests\Unit\ModelsTest" classname="Tests.Unit.ModelsTest" assertions="3" time="0.002930"/>
+        </testsuite>
+        <testcase name="test_user_account_uses_password_hash_and_no_remember_token" file="C:\laragon\www\jeanrose-pos\tests\Unit\ModelsTest.php" line="50" class="Tests\Unit\ModelsTest" classname="Tests.Unit.ModelsTest" assertions="3" time="0.006910"/>
+      </testsuite>
+    </testsuite>
+    <testsuite name="Feature" tests="64" assertions="338" errors="0" failures="0" skipped="0" time="9.029856">
+      <testsuite name="Tests\Feature\HealthTest" file="C:\laragon\www\jeanrose-pos\tests\Feature\HealthTest.php" tests="4" assertions="15" errors="0" failures="0" skipped="0" time="0.499468">
+        <testcase name="test_health_returns_ok" file="C:\laragon\www\jeanrose-pos\tests\Feature\HealthTest.php" line="10" class="Tests\Feature\HealthTest" classname="Tests.Feature.HealthTest" assertions="2" time="0.389076"/>
+        <testcase name="test_layout_loads_bootstrap_cdn_and_our_css_without_vite" file="C:\laragon\www\jeanrose-pos\tests\Feature\HealthTest.php" line="18" class="Tests\Feature\HealthTest" classname="Tests.Feature.HealthTest" assertions="6" time="0.054229"/>
+        <testcase name="test_guest_sees_logo_but_no_menu_or_logout" file="C:\laragon\www\jeanrose-pos\tests\Feature\HealthTest.php" line="31" class="Tests\Feature\HealthTest" classname="Tests.Feature.HealthTest" assertions="5" time="0.031351"/>
+        <testcase name="test_pos_settings_have_defaults" file="C:\laragon\www\jeanrose-pos\tests\Feature\HealthTest.php" line="42" class="Tests\Feature\HealthTest" classname="Tests.Feature.HealthTest" assertions="2" time="0.024811"/>
+      </testsuite>
+      <testsuite name="Tests\Feature\InventoryTest" file="C:\laragon\www\jeanrose-pos\tests\Feature\InventoryTest.php" tests="9" assertions="43" errors="0" failures="0" skipped="0" time="0.890585">
+        <testcase name="test_cashier_gets_403" file="C:\laragon\www\jeanrose-pos\tests\Feature\InventoryTest.php" line="54" class="Tests\Feature\InventoryTest" classname="Tests.Feature.InventoryTest" assertions="1" time="0.132240"/>
+        <testcase name="test_guest_is_sent_to_login" file="C:\laragon\www\jeanrose-pos\tests\Feature\InventoryTest.php" line="61" class="Tests\Feature\InventoryTest" classname="Tests.Feature.InventoryTest" assertions="2" time="0.053206"/>
+        <testcase name="test_owner_sees_every_batch_with_its_status" file="C:\laragon\www\jeanrose-pos\tests\Feature\InventoryTest.php" line="70" class="Tests\Feature\InventoryTest" classname="Tests.Feature.InventoryTest" assertions="14" time="0.143610"/>
+        <testcase name="test_expired_batch_shows_expired" file="C:\laragon\www\jeanrose-pos\tests\Feature\InventoryTest.php" line="102" class="Tests\Feature\InventoryTest" classname="Tests.Feature.InventoryTest" assertions="4" time="0.115132"/>
+        <testcase name="test_status_comes_from_the_stored_value" file="C:\laragon\www\jeanrose-pos\tests\Feature\InventoryTest.php" line="115" class="Tests\Feature\InventoryTest" classname="Tests.Feature.InventoryTest" assertions="1" time="0.073037"/>
+        <testcase name="test_summary_counts_and_first_item" file="C:\laragon\www\jeanrose-pos\tests\Feature\InventoryTest.php" line="127" class="Tests\Feature\InventoryTest" classname="Tests.Feature.InventoryTest" assertions="4" time="0.057431"/>
+        <testcase name="test_search_narrows_the_list" file="C:\laragon\www\jeanrose-pos\tests\Feature\InventoryTest.php" line="155" class="Tests\Feature\InventoryTest" classname="Tests.Feature.InventoryTest" assertions="11" time="0.167726"/>
+        <testcase name="test_search_with_no_match_shows_message" file="C:\laragon\www\jeanrose-pos\tests\Feature\InventoryTest.php" line="181" class="Tests\Feature\InventoryTest" classname="Tests.Feature.InventoryTest" assertions="2" time="0.062687"/>
+        <testcase name="test_opening_the_page_writes_nothing" file="C:\laragon\www\jeanrose-pos\tests\Feature\InventoryTest.php" line="194" class="Tests\Feature\InventoryTest" classname="Tests.Feature.InventoryTest" assertions="4" time="0.085517"/>
+      </testsuite>
+      <testsuite name="Tests\Feature\LoginTest" file="C:\laragon\www\jeanrose-pos\tests\Feature\LoginTest.php" tests="8" assertions="36" errors="0" failures="0" skipped="0" time="2.119583">
+        <testcase name="test_owner_can_log_in_and_login_is_audited" file="C:\laragon\www\jeanrose-pos\tests\Feature\LoginTest.php" line="39" class="Tests\Feature\LoginTest" classname="Tests.Feature.LoginTest" assertions="6" time="0.097761"/>
+        <testcase name="test_wrong_password_shows_generic_error" file="C:\laragon\www\jeanrose-pos\tests\Feature\LoginTest.php" line="53" class="Tests\Feature\LoginTest" classname="Tests.Feature.LoginTest" assertions="7" time="0.276210"/>
+        <testcase name="test_unknown_username_shows_same_generic_error" file="C:\laragon\www\jeanrose-pos\tests\Feature\LoginTest.php" line="68" class="Tests\Feature\LoginTest" classname="Tests.Feature.LoginTest" assertions="3" time="0.240248"/>
+        <testcase name="test_inactive_account_is_blocked" file="C:\laragon\www\jeanrose-pos\tests\Feature\LoginTest.php" line="78" class="Tests\Feature\LoginTest" classname="Tests.Feature.LoginTest" assertions="4" time="0.265090"/>
+        <testcase name="test_login_is_locked_after_five_wrong_tries" file="C:\laragon\www\jeanrose-pos\tests\Feature\LoginTest.php" line="91" class="Tests\Feature\LoginTest" classname="Tests.Feature.LoginTest" assertions="4" time="1.119099"/>
+        <testcase name="test_user_can_log_out" file="C:\laragon\www\jeanrose-pos\tests\Feature\LoginTest.php" line="108" class="Tests\Feature\LoginTest" classname="Tests.Feature.LoginTest" assertions="3" time="0.042879"/>
+        <testcase name="test_guest_is_sent_to_login" file="C:\laragon\www\jeanrose-pos\tests\Feature\LoginTest.php" line="116" class="Tests\Feature\LoginTest" classname="Tests.Feature.LoginTest" assertions="6" time="0.041923"/>
+        <testcase name="test_login_page_shows_the_form" file="C:\laragon\www\jeanrose-pos\tests\Feature\LoginTest.php" line="123" class="Tests\Feature\LoginTest" classname="Tests.Feature.LoginTest" assertions="3" time="0.036373"/>
+      </testsuite>
+      <testsuite name="Tests\Feature\PayNowTest" file="C:\laragon\www\jeanrose-pos\tests\Feature\PayNowTest.php" tests="15" assertions="128" errors="0" failures="0" skipped="0" time="2.635775">
+        <testcase name="test_t07_pay_with_enough_cash_saves_everything" file="C:\laragon\www\jeanrose-pos\tests\Feature\PayNowTest.php" line="107" class="Tests\Feature\PayNowTest" classname="Tests.Feature.PayNowTest" assertions="17" time="0.172023"/>
+        <testcase name="test_mockup_numbers_570_minus_12_is_558_change_42" file="C:\laragon\www\jeanrose-pos\tests\Feature\PayNowTest.php" line="146" class="Tests\Feature\PayNowTest" classname="Tests.Feature.PayNowTest" assertions="23" time="0.173480"/>
+        <testcase name="test_t08_cash_less_than_total_is_refused_and_nothing_saved" file="C:\laragon\www\jeanrose-pos\tests\Feature\PayNowTest.php" line="185" class="Tests\Feature\PayNowTest" classname="Tests.Feature.PayNowTest" assertions="8" time="0.155594"/>
+        <testcase name="test_t08_cash_must_be_a_number" file="C:\laragon\www\jeanrose-pos\tests\Feature\PayNowTest.php" line="201" class="Tests\Feature\PayNowTest" classname="Tests.Feature.PayNowTest" assertions="10" time="0.185185"/>
+        <testcase name="test_t09_stock_changed_mid_sale_rolls_back_with_error" file="C:\laragon\www\jeanrose-pos\tests\Feature\PayNowTest.php" line="216" class="Tests\Feature\PayNowTest" classname="Tests.Feature.PayNowTest" assertions="6" time="0.126524"/>
+        <testcase name="test_forced_error_in_the_middle_saves_nothing" file="C:\laragon\www\jeanrose-pos\tests\Feature\PayNowTest.php" line="236" class="Tests\Feature\PayNowTest" classname="Tests.Feature.PayNowTest" assertions="8" time="0.232261"/>
+        <testcase name="test_t23_alerts_open_once_switch_type_and_resolve" file="C:\laragon\www\jeanrose-pos\tests\Feature\PayNowTest.php" line="256" class="Tests\Feature\PayNowTest" classname="Tests.Feature.PayNowTest" assertions="13" time="0.260045"/>
+        <testcase name="test_double_tap_makes_only_one_sale" file="C:\laragon\www\jeanrose-pos\tests\Feature\PayNowTest.php" line="295" class="Tests\Feature\PayNowTest" classname="Tests.Feature.PayNowTest" assertions="8" time="0.148881"/>
+        <testcase name="test_unknown_token_is_refused" file="C:\laragon\www\jeanrose-pos\tests\Feature\PayNowTest.php" line="315" class="Tests\Feature\PayNowTest" classname="Tests.Feature.PayNowTest" assertions="5" time="0.120670"/>
+        <testcase name="test_totals_sent_by_the_browser_are_ignored" file="C:\laragon\www\jeanrose-pos\tests\Feature\PayNowTest.php" line="329" class="Tests\Feature\PayNowTest" classname="Tests.Feature.PayNowTest" assertions="4" time="0.226624"/>
+        <testcase name="test_zero_discount_shows_without_minus_sign" file="C:\laragon\www\jeanrose-pos\tests\Feature\PayNowTest.php" line="342" class="Tests\Feature\PayNowTest" classname="Tests.Feature.PayNowTest" assertions="6" time="0.175618"/>
+        <testcase name="test_empty_order_cannot_be_paid" file="C:\laragon\www\jeanrose-pos\tests\Feature\PayNowTest.php" line="360" class="Tests\Feature\PayNowTest" classname="Tests.Feature.PayNowTest" assertions="3" time="0.094563"/>
+        <testcase name="test_fefo_split_makes_one_row_per_batch" file="C:\laragon\www\jeanrose-pos\tests\Feature\PayNowTest.php" line="371" class="Tests\Feature\PayNowTest" classname="Tests.Feature.PayNowTest" assertions="6" time="0.276673"/>
+        <testcase name="test_receipt_access" file="C:\laragon\www\jeanrose-pos\tests\Feature\PayNowTest.php" line="391" class="Tests\Feature\PayNowTest" classname="Tests.Feature.PayNowTest" assertions="5" time="0.183423"/>
+        <testcase name="test_pay_now_opens_the_payment_box" file="C:\laragon\www\jeanrose-pos\tests\Feature\PayNowTest.php" line="407" class="Tests\Feature\PayNowTest" classname="Tests.Feature.PayNowTest" assertions="6" time="0.104213"/>
+      </testsuite>
+      <testsuite name="Tests\Feature\PosTest" file="C:\laragon\www\jeanrose-pos\tests\Feature\PosTest.php" tests="16" assertions="69" errors="0" failures="0" skipped="0" time="2.075373">
+        <testcase name="test_guest_is_sent_to_login" file="C:\laragon\www\jeanrose-pos\tests\Feature\PosTest.php" line="36" class="Tests\Feature\PosTest" classname="Tests.Feature.PosTest" assertions="2" time="0.080471"/>
+        <testcase name="test_pos_shows_product_cards_with_badges" file="C:\laragon\www\jeanrose-pos\tests\Feature\PosTest.php" line="43" class="Tests\Feature\PosTest" classname="Tests.Feature.PosTest" assertions="6" time="0.114510"/>
+        <testcase name="test_search_hides_cards_that_do_not_match" file="C:\laragon\www\jeanrose-pos\tests\Feature\PosTest.php" line="67" class="Tests\Feature\PosTest" classname="Tests.Feature.PosTest" assertions="5" time="0.136103"/>
+        <testcase name="test_search_matches_product_number" file="C:\laragon\www\jeanrose-pos\tests\Feature\PosTest.php" line="80" class="Tests\Feature\PosTest" classname="Tests.Feature.PosTest" assertions="5" time="0.209517"/>
+        <testcase name="test_empty_search_shows_all_products" file="C:\laragon\www\jeanrose-pos\tests\Feature\PosTest.php" line="91" class="Tests\Feature\PosTest" classname="Tests.Feature.PosTest" assertions="5" time="0.210408"/>
+        <testcase name="test_no_products_found_message_when_nothing_matches" file="C:\laragon\www\jeanrose-pos\tests\Feature\PosTest.php" line="102" class="Tests\Feature\PosTest" classname="Tests.Feature.PosTest" assertions="6" time="0.158841"/>
+        <testcase name="test_search_works_together_with_category" file="C:\laragon\www\jeanrose-pos\tests\Feature\PosTest.php" line="122" class="Tests\Feature\PosTest" classname="Tests.Feature.PosTest" assertions="4" time="0.137291"/>
+        <testcase name="test_search_does_not_change_the_cart" file="C:\laragon\www\jeanrose-pos\tests\Feature\PosTest.php" line="133" class="Tests\Feature\PosTest" classname="Tests.Feature.PosTest" assertions="3" time="0.108869"/>
+        <testcase name="test_t05_add_and_change_quantity_updates_total" file="C:\laragon\www\jeanrose-pos\tests\Feature\PosTest.php" line="145" class="Tests\Feature\PosTest" classname="Tests.Feature.PosTest" assertions="9" time="0.187695"/>
+        <testcase name="test_t05_minus_at_one_removes_the_line" file="C:\laragon\www\jeanrose-pos\tests\Feature\PosTest.php" line="172" class="Tests\Feature\PosTest" classname="Tests.Feature.PosTest" assertions="1" time="0.083686"/>
+        <testcase name="test_t05_quantity_cannot_go_above_stock" file="C:\laragon\www\jeanrose-pos\tests\Feature\PosTest.php" line="182" class="Tests\Feature\PosTest" classname="Tests.Feature.PosTest" assertions="2" time="0.094976"/>
+        <testcase name="test_t06_out_of_stock_product_cannot_be_added" file="C:\laragon\www\jeanrose-pos\tests\Feature\PosTest.php" line="196" class="Tests\Feature\PosTest" classname="Tests.Feature.PosTest" assertions="2" time="0.074814"/>
+        <testcase name="test_t06_expired_stock_is_not_sold" file="C:\laragon\www\jeanrose-pos\tests\Feature\PosTest.php" line="206" class="Tests\Feature\PosTest" classname="Tests.Feature.PosTest" assertions="2" time="0.076828"/>
+        <testcase name="test_t10_near_expiry_line_gets_ten_percent_discount" file="C:\laragon\www\jeanrose-pos\tests\Feature\PosTest.php" line="219" class="Tests\Feature\PosTest" classname="Tests.Feature.PosTest" assertions="6" time="0.146781"/>
+        <testcase name="test_t11_fefo_picks_earliest_expiry_first_and_splits" file="C:\laragon\www\jeanrose-pos\tests\Feature\PosTest.php" line="241" class="Tests\Feature\PosTest" classname="Tests.Feature.PosTest" assertions="6" time="0.116828"/>
+        <testcase name="test_t11_discount_only_on_the_near_expiry_part" file="C:\laragon\www\jeanrose-pos\tests\Feature\PosTest.php" line="260" class="Tests\Feature\PosTest" classname="Tests.Feature.PosTest" assertions="5" time="0.137756"/>
+      </testsuite>
+      <testsuite name="Tests\Feature\RolesTest" file="C:\laragon\www\jeanrose-pos\tests\Feature\RolesTest.php" tests="2" assertions="10" errors="0" failures="0" skipped="0" time="0.289346">
+        <testcase name="test_cashier_gets_403_on_owner_pages" file="C:\laragon\www\jeanrose-pos\tests\Feature\RolesTest.php" line="32" class="Tests\Feature\RolesTest" classname="Tests.Feature.RolesTest" assertions="5" time="0.155465"/>
+        <testcase name="test_owner_can_open_all_pages" file="C:\laragon\www\jeanrose-pos\tests\Feature\RolesTest.php" line="44" class="Tests\Feature\RolesTest" classname="Tests.Feature.RolesTest" assertions="5" time="0.133880"/>
+      </testsuite>
+      <testsuite name="Tests\Feature\SetupTest" file="C:\laragon\www\jeanrose-pos\tests\Feature\SetupTest.php" tests="4" assertions="24" errors="0" failures="0" skipped="0" time="0.328999">
+        <testcase name="test_models_save_and_load_rows_with_relationships" file="C:\laragon\www\jeanrose-pos\tests\Feature\SetupTest.php" line="35" class="Tests\Feature\SetupTest" classname="Tests.Feature.SetupTest" assertions="7" time="0.091308"/>
+        <testcase name="test_user_account_password_is_hashed" file="C:\laragon\www\jeanrose-pos\tests\Feature\SetupTest.php" line="75" class="Tests\Feature\SetupTest" classname="Tests.Feature.SetupTest" assertions="2" time="0.062276"/>
+        <testcase name="test_owner_sees_all_tabs_in_header" file="C:\laragon\www\jeanrose-pos\tests\Feature\SetupTest.php" line="83" class="Tests\Feature\SetupTest" classname="Tests.Feature.SetupTest" assertions="8" time="0.087387"/>
+        <testcase name="test_cashier_sees_no_owner_tabs" file="C:\laragon\www\jeanrose-pos\tests\Feature\SetupTest.php" line="97" class="Tests\Feature\SetupTest" classname="Tests.Feature.SetupTest" assertions="7" time="0.088027"/>
+      </testsuite>
+      <testsuite name="Tests\Feature\StockStatusTest" file="C:\laragon\www\jeanrose-pos\tests\Feature\StockStatusTest.php" tests="6" assertions="13" errors="0" failures="0" skipped="0" time="0.190727">
+        <testcase name="test_zero_quantity_is_out_of_stock_even_if_near_expiry_and_low" file="C:\laragon\www\jeanrose-pos\tests\Feature\StockStatusTest.php" line="29" class="Tests\Feature\StockStatusTest" classname="Tests.Feature.StockStatusTest" assertions="2" time="0.053995"/>
+        <testcase name="test_near_expiry_wins_over_low_stock" file="C:\laragon\www\jeanrose-pos\tests\Feature\StockStatusTest.php" line="35" class="Tests\Feature\StockStatusTest" classname="Tests.Feature.StockStatusTest" assertions="2" time="0.033149"/>
+        <testcase name="test_low_stock_when_at_or_below_reorder_level" file="C:\laragon\www\jeanrose-pos\tests\Feature\StockStatusTest.php" line="41" class="Tests\Feature\StockStatusTest" classname="Tests.Feature.StockStatusTest" assertions="2" time="0.025323"/>
+        <testcase name="test_okay_otherwise" file="C:\laragon\www\jeanrose-pos\tests\Feature\StockStatusTest.php" line="47" class="Tests\Feature\StockStatusTest" classname="Tests.Feature.StockStatusTest" assertions="1" time="0.025536"/>
+        <testcase name="test_near_expiry_boundary_is_30_days" file="C:\laragon\www\jeanrose-pos\tests\Feature\StockStatusTest.php" line="52" class="Tests\Feature\StockStatusTest" classname="Tests.Feature.StockStatusTest" assertions="2" time="0.027131"/>
+        <testcase name="test_expired_batch_is_not_near_expiry" file="C:\laragon\www\jeanrose-pos\tests\Feature\StockStatusTest.php" line="58" class="Tests\Feature\StockStatusTest" classname="Tests.Feature.StockStatusTest" assertions="4" time="0.025592"/>
+      </testsuite>
+    </testsuite>
+  </testsuite>
+</testsuites>
