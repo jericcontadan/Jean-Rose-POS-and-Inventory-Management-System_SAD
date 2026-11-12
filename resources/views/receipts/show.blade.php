@@ -13,7 +13,14 @@
             <div class="jr-receipt-heading">SALES RECEIPT</div>
 
             @if ($sale->sale_status === 'CANCELLED')
-                <div class="jr-receipt-void">CANCELLED (VOIDED)</div>
+                {{-- Voided sale: a big VOIDED stamp (it is printed too), with the reason and when it was voided. --}}
+                <div class="jr-receipt-void" role="note">
+                    <span class="jr-receipt-void-stamp">VOIDED</span>
+                    <span>Reason: {{ $sale->void_reason }}</span>
+                    @if ($sale->voided_at)
+                        <span>Voided {{ $sale->voided_at->format('m/d/Y H:i') }}</span>
+                    @endif
+                </div>
             @endif
 
             <div class="jr-receipt-block">

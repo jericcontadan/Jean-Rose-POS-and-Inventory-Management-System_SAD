@@ -16,6 +16,7 @@ use Tests\Feature\Concerns\CreatesPosData;
 use Tests\TestCase;
 
 // Sales Records (screen 7, Step 5): owner only, sales of one day grouped by receipt, daily summary, read only.
+// (The Void action itself is tested in VoidTest.)
 // Sales are made directly here with a fixed date, so dates and statuses are exact.
 // The dates are in 2030 so they never mix with other sales in the test database.
 // DatabaseTransactions rolls everything back after each test.
@@ -246,17 +247,19 @@ class SalesRecordsTest extends TestCase
             ->assertViewHas('sales', fn ($sales) => $sales->count() === 1);
     }
 
-    public function test_void_and_export_are_shown_but_disabled(): void
+    public function test_export_is_disabled_and_void_is_a_link_for_paid_sales_only(): void
     {
         $serum = $this->product('Serum', 120);
-        $this->makeSale('2030-01-21 09:00:00', [[$serum, 1, 120, 0]]);
+        $paid = $this->makeSale('2030-01-21 09:00:00', [[$serum, 1, 120, 0]]);
+        $this->makeSale('2030-01-21 10:00:00', [[$serum, 1, 120, 0]], 'CANCELLED', 'test');
 
-        $this->get('/sales?date=2030-01-21')
-            ->assertSee('jr-btn-row" disabled>Void</button>', false)
-            ->assertSee('disabled>Export to Excel</button>', false)
+        $response = $this->get('/sales?date=2030-01-21')
+            ->assertSee('disabled>Export to Excel</button>', false) // Excel export is Step 12
             ->assertSee('Close Sales'); // the Close summary box is on the page
 
-        // Void is built in Step 7: no route yet.
-        $this->assertFalse(Route::has('sales.void'));
+        // Void (Step 7) is now a working link that opens the void card, shown once, only for the PAID sale.
+        $response->assertSee(route('sales.index', ['date' => '2030-01-21', 'void' => $paid->sale_id])); // escaped: &amp;
+        $this->assertSame(1, substr_count($response->getContent(), '>Void</a>'));
+        $this->assertTrue(Route::has('sales.void'));
     }
 }

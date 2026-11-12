@@ -3,7 +3,8 @@
     Rows are grouped by sale: one header row per receipt (S-0001, time, cashier), then one row per sale_item.
     Price is sale_item.unit_price (the price when it was sold), never today's product price.
     CANCELLED (voided) sales are shown grey with their reason and are NOT in the totals.
-    READ ONLY: Void (Step 7) and Export to Excel (Step 12) are shown but disabled. Close only shows a summary.
+    Void (screen 8): the Void button opens the void card on the right (?void=<sale id>, mockup right part).
+    Confirm void posts to sales.void; SaleService::void() does the work. Export to Excel (Step 12) is shown but disabled.
     All data comes from SalesRecordController / SaleService; this view only shows it.
 --}}
 @extends('layouts.app')
@@ -45,6 +46,10 @@
             <div class="alert alert-danger mb-0" role="alert">{{ $message }}</div>
         @enderror
 
+        {{-- Left: table and summary. Right: the void card (only when a sale was chosen). --}}
+        <div class="jr-sales-layout">
+        <div class="jr-sales-main">
+
         {{-- One <tbody> per sale: a header row (receipt), then its items --}}
         <div class="jr-sales-table-wrap">
             <table class="table jr-sales-table">
@@ -80,8 +85,11 @@
                                     {{-- Reprint: opens the saved receipt (it has its own Print button). --}}
                                     <a href="{{ route('receipts.show', $sale) }}" class="btn btn-outline-primary jr-btn-row">Receipt</a>
                                     @unless ($voided)
-                                        {{-- Built in Step 7 (Void a Sale): shown, not working yet. --}}
-                                        <button type="button" class="btn jr-btn-void jr-btn-row" disabled>Void</button>
+                                        {{-- Opens the void card for this sale (a normal link: works by touch, no script needed). --}}
+                                        @php($selected = $voidSale?->sale_id === $sale->sale_id)
+                                        <a href="{{ route('sales.index', ['date' => $date->format('Y-m-d'), 'void' => $sale->sale_id]) }}"
+                                           class="btn jr-btn-void jr-btn-row {{ $selected ? 'jr-btn-void-on' : '' }}"
+                                           @if ($selected) aria-current="true" @endif>Void</a>
                                     @endunless
                                 </div>
                             </td>
@@ -124,6 +132,45 @@
                 Total sales <span class="jr-sales-total" id="summaryTotal">{{ $peso($summary['total_sales']) }}</span>
             </span>
         </div>
+        </div>{{-- /.jr-sales-main --}}
+
+        @if ($voidSale)
+            {{-- Void card (mockup right part). This card is the "confirm before void" step. --}}
+            <form method="POST" action="{{ route('sales.void', $voidSale) }}" class="card jr-void-card" id="voidForm">
+                @csrf
+                <h2 class="jr-void-title">Void sale {{ $voidSale->receiptNumber() }}</h2>
+
+                <div class="jr-void-selected">
+                    <span class="jr-void-selected-label">SELECTED SALE</span>
+                    <span class="fw-bold">{{ $voidSale->sale_datetime->format('m/d/Y H:i') }}</span>
+                    <span>{{ $voidItems }}</span>
+                    <span class="jr-void-selected-total">Total {{ $peso($voidSale->total_amount) }}</span>
+                </div>
+
+                <div class="d-flex flex-column gap-2">
+                    <label for="voidReason" class="jr-void-label">Reason *</label>
+                    <textarea id="voidReason" name="reason" rows="3" required minlength="5" maxlength="247"
+                              placeholder="Example: wrong item entered"
+                              class="form-control jr-void-reason @error('reason') is-invalid @enderror"
+                              @error('reason') aria-describedby="voidReasonError" @enderror>{{ old('reason') }}</textarea>
+                    @error('reason')
+                        <div class="invalid-feedback d-block" id="voidReasonError">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="jr-void-note">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4M12 8h.01"></path></svg>
+                    <span>Stock will be returned to inventory. This is saved in the audit log.</span>
+                </div>
+
+                <div class="jr-void-buttons">
+                    <a href="{{ route('sales.index', ['date' => $date->format('Y-m-d')]) }}" class="btn btn-outline-primary jr-void-cancel">Cancel</a>
+                    <button type="submit" class="btn jr-btn-confirm-void" id="confirmVoid">Confirm void</button>
+                </div>
+            </form>
+        @endif
+        </div>{{-- /.jr-sales-layout --}}
     </div>
 
     {{-- Close Sales: shows the day's summary only. Nothing is saved (the schema has no Close Sales table). --}}
@@ -160,6 +207,15 @@
                 document.getElementById('salesDateForm').submit();
             }
         });
+
+        // Confirm void: disable the button after the first tap so it is sent only once.
+        // (The server also refuses a second void of the same sale.)
+        const voidForm = document.getElementById('voidForm');
+        if (voidForm) {
+            voidForm.addEventListener('submit', function () {
+                document.getElementById('confirmVoid').disabled = true;
+            });
+        }
     })();
 </script>
 @endpush

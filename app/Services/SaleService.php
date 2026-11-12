@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Exceptions\PaymentException;
+use App\Exceptions\VoidException;
 use App\Models\Inventory;
 use App\Models\Product;
 use App\Models\Sale;
@@ -12,7 +13,7 @@ use Carbon\CarbonInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
-// Pay Now (docs/04-business-rules.md, "Pay Now"). Everything runs in ONE DB::transaction():
+// Pay Now and Void (docs/04-business-rules.md). Each one runs in ONE DB::transaction():
 // if any step throws, MySQL rolls back every row written so far and nothing is saved.
 // Prices and totals are always worked out here from the database; nothing from the browser is trusted.
 class SaleService
@@ -127,7 +128,78 @@ class SaleService
         });
     }
 
-    // ---------- Sales Records (screen 7): READ ONLY, these two methods never write ----------
+    /**
+     * Void a recorded sale (docs/04-business-rules.md, "Void a recorded sale"). OWNER only.
+     * Everything runs in ONE DB::transaction(): if any step throws, every row is rolled back.
+     * The sale is never deleted: it is marked CANCELLED and its stock goes back to the same batches.
+     */
+    public function void(UserAccount $owner, Sale $sale, string $reason): Sale
+    {
+        return DB::transaction(function () use ($owner, $sale, $reason) {
+            // 1. Read the sale again and LOCK it. A second void of the same sale waits here,
+            //    then sees CANCELLED and is refused, so it is never voided twice.
+            $sale = Sale::whereKey($sale->sale_id)->lockForUpdate()->firstOrFail();
+
+            if ($sale->sale_status !== 'PAID') {
+                throw new VoidException("Sale {$sale->receiptNumber()} is already voided.");
+            }
+
+            // 2. Mark the sale CANCELLED with the reason, the time and the owner.
+            $sale->update([
+                'sale_status' => 'CANCELLED',
+                'void_reason' => $reason,
+                'voided_at' => now(),
+                'voided_by' => $owner->user_id,
+            ]);
+
+            // 3. Lock the stock rows of the sold batches (ordered by inventory_id, like Pay Now).
+            $items = $sale->items()->orderBy('sale_item_id')->get();
+            $stock = Inventory::with('batch') // the status rule needs the batch's expiry date
+                ->whereIn('batch_id', $items->pluck('batch_id'))
+                ->orderBy('inventory_id')
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('batch_id');
+
+            // 4. Give each item's quantity back to the same batch: status, history (VOID) and alerts by InventoryService.
+            foreach ($items as $item) {
+                $this->inventory->returnForVoid($stock->get($item->batch_id), (int) $item->quantity, $owner);
+            }
+
+            // 5. Audit row. VoidRequest caps the reason at 247, so "Reason: " + reason always fits in details (255).
+            $this->audit->log(
+                $owner,
+                'VOID',
+                'SALES',
+                $sale->receiptNumber(),
+                'Reason: '.$reason,
+                $sale->sale_id,
+            );
+
+            return $sale;
+        });
+    }
+
+    // ---------- Sales Records (screen 7): READ ONLY, the methods below never write ----------
+
+    // The sale shown in the void card: only a PAID sale can be voided, anything else gives null (no card).
+    public function saleToVoid(?int $saleId): ?Sale
+    {
+        if ($saleId === null) {
+            return null;
+        }
+
+        return Sale::with('items.batch.product')->where('sale_status', 'PAID')->find($saleId);
+    }
+
+    // "Serum x1, Makeup x3": a product sold from two batches (FEFO split) is shown once with its total quantity.
+    public function itemsSummary(Sale $sale): string
+    {
+        return $sale->items
+            ->groupBy(fn (SaleItem $item) => $item->batch->product_id)
+            ->map(fn ($items) => $items->first()->batch->product->product_name.' x'.$items->sum('quantity'))
+            ->implode(', ');
+    }
 
     // The sales of one day (by sale_datetime), oldest first, 50 sales per page.
     // Paginated by SALE, not by item row, so one receipt is never split over two pages.

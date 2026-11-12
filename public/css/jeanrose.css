@@ -693,7 +693,20 @@ h1, h2, h3, h4, h5, h6, .btn {
     color: var(--jr-primary);
 }
 .jr-receipt-heading { text-align: center; font-weight: 700; letter-spacing: 2px; }
-.jr-receipt-void { text-align: center; font-weight: 700; color: var(--jr-danger); border: 2px solid var(--jr-danger); border-radius: 8px; padding: 4px; }
+/* VOIDED stamp on the receipt of a cancelled sale */
+.jr-receipt-void {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    text-align: center;
+    color: var(--jr-danger);
+    border: 3px solid var(--jr-danger);
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 14px;
+}
+.jr-receipt-void-stamp { font-family: var(--jr-font-head); font-weight: 800; font-size: 30px; letter-spacing: 6px; line-height: 1.1; }
 .jr-receipt-block {
     border-top: 2px dashed var(--jr-border);
     padding-top: 12px;
@@ -834,6 +847,58 @@ h1, h2, h3, h4, h5, h6, .btn {
     --bs-btn-disabled-bg: var(--jr-panel);
     --bs-btn-disabled-border-color: var(--jr-danger);
     --bs-btn-disabled-color: var(--jr-danger);
+}
+
+/* The sale whose void card is open: filled Void button (mockup) */
+.jr-btn-void.jr-btn-void-on,
+.jr-btn-void.jr-btn-void-on:hover,
+.jr-btn-void.jr-btn-void-on:active { background: var(--jr-danger); color: #FFFFFF; border-color: var(--jr-danger); }
+
+/* Table + summary on the left, void card on the right; the card goes under the table below 992px */
+.jr-sales-layout { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+.jr-sales-main { flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
+
+/* Void card (mockup: docs/design/07-sales-records-void.png, right part) */
+.jr-void-card {
+    flex: 1 1 340px;
+    max-width: 440px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    border-radius: 24px;
+    box-shadow: 0 12px 32px var(--jr-primary-soft);
+}
+.jr-void-title { font-family: var(--jr-font-head); font-weight: 700; font-size: 22px; margin: 0; }
+.jr-void-selected { background: var(--jr-fill); border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; }
+.jr-void-selected-label { font-size: 14px; font-weight: 700; letter-spacing: 1px; color: #5C1B43; }
+.jr-void-selected-total { font-family: var(--jr-font-head); font-weight: 600; font-size: 18px; color: var(--jr-primary); }
+.jr-void-label { font-size: 15px; font-weight: 700; }
+.jr-void-card .jr-void-reason { min-height: 92px; border-radius: 14px; resize: vertical; }
+.jr-void-note { display: flex; gap: 10px; align-items: flex-start; background: var(--jr-bg); border-radius: 14px; padding: 12px 14px; font-size: 14px; color: #5C1B43; }
+.jr-void-note > svg { flex-shrink: 0; margin-top: 1px; color: var(--jr-text-strong); }
+.jr-void-buttons { display: flex; gap: 12px; }
+.jr-void-cancel { flex: 1 1 0; min-height: 54px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
+.jr-btn-confirm-void {
+    flex: 1.4 1 0;
+    min-height: 54px;
+    border-radius: 14px;
+    font-weight: 700;
+    --bs-btn-bg: var(--jr-danger);
+    --bs-btn-border-color: var(--jr-danger);
+    --bs-btn-color: #FFFFFF;
+    --bs-btn-hover-bg: var(--jr-danger);
+    --bs-btn-hover-border-color: var(--jr-danger);
+    --bs-btn-hover-color: #FFFFFF;
+    --bs-btn-active-bg: var(--jr-danger);
+    --bs-btn-active-border-color: var(--jr-danger);
+    --bs-btn-active-color: #FFFFFF;
+    --bs-btn-disabled-bg: var(--jr-danger);
+    --bs-btn-disabled-border-color: var(--jr-danger);
+    --bs-btn-disabled-color: #FFFFFF;
+}
+@media (max-width: 991.98px) {
+    .jr-void-card { max-width: none; }
 }
 
 /* Voided (CANCELLED) sale: grey and faded, with a VOIDED pill and the reason */

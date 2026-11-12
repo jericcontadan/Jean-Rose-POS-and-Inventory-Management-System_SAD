@@ -48,8 +48,11 @@ Route::middleware(['auth', 'can:owner'])->group(function () {
     // Inventory (read only for now): one row per batch, summary cards, live search.
     Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
 
-    // Sales Records (read only for now): date filter, sales grouped by receipt, daily summary, Close summary.
+    // Sales Records: date filter, sales grouped by receipt, daily summary, Close summary.
     Route::get('/sales', [SalesRecordController::class, 'index'])->name('sales.index');
+
+    // Void a Sale. block(): two taps on "Confirm void" run one after the other, never at the same time.
+    Route::post('/sales/{sale}/void', [SalesRecordController::class, 'void'])->name('sales.void')->block(10, 10);
 
     // Audit Log: READ ONLY. GET only, on purpose: there is no route to edit or delete audit rows (T18).
     Route::get('/audit-log', [AuditLogController::class, 'index'])->name('audit.index');
