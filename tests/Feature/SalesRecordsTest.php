@@ -217,7 +217,7 @@ class SalesRecordsTest extends TestCase
         $this->assertEquals($before, $counts());
     }
 
-    // ---------- reprint, pagination, disabled buttons ----------
+    // ---------- reprint, pagination, page buttons ----------
 
     public function test_each_sale_links_to_its_receipt(): void
     {
@@ -247,14 +247,15 @@ class SalesRecordsTest extends TestCase
             ->assertViewHas('sales', fn ($sales) => $sales->count() === 1);
     }
 
-    public function test_export_is_disabled_and_void_is_a_link_for_paid_sales_only(): void
+    public function test_export_links_to_that_day_and_void_is_a_link_for_paid_sales_only(): void
     {
         $serum = $this->product('Serum', 120);
         $paid = $this->makeSale('2030-01-21 09:00:00', [[$serum, 1, 120, 0]]);
         $this->makeSale('2030-01-21 10:00:00', [[$serum, 1, 120, 0]], 'CANCELLED', 'test');
 
         $response = $this->get('/sales?date=2030-01-21')
-            ->assertSee('disabled>Export to Excel</button>', false) // Excel export is Step 12
+            // Export to Excel downloads the Sales report of this day (ExcelExportTest checks the file).
+            ->assertSee(route('exports.download', ['report' => 'sales', 'from' => '2030-01-21', 'to' => '2030-01-21']))
             ->assertSee('Close Sales'); // the Close summary box is on the page
 
         // Void (Step 7) is now a working link that opens the void card, shown once, only for the PAID sale.

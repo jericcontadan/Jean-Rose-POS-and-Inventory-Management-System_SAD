@@ -13,7 +13,7 @@ use Illuminate\View\View;
 use Throwable;
 
 // Sales Records (screen 7, FR-08) and Void a Sale (screen 8, FR-08/FR-09). OWNER only (route group can:owner).
-// Thin controller: the void rules live in SaleService::void(). Export to Excel comes in Step 12.
+// Thin controller: the void rules live in SaleService::void(). Excel export: ExportController (card on the Audit Log page).
 class SalesRecordController extends Controller
 {
     public function __construct(private SaleService $sales)

@@ -1,7 +1,7 @@
 {{--
     Audit Log (screen 13), OWNER only. Mockup: docs/design/09-audit-log-export.png.
     Left: filters (Date From/To, User, Action, Apply) and the table, newest first, 50 per page.
-    Right: the Export to Excel card, shown but DISABLED (Excel export is a later step).
+    Right: the Export to Excel card (Inventory list, Sales Records or Audit log as .xlsx, ExportController).
     READ ONLY: no edit or delete buttons. All data comes from AuditLogController / AuditService; this view only shows it.
 --}}
 @extends('layouts.app')
@@ -15,6 +15,7 @@
         'SALE' => 'jr-audit-sale',
         'VOID' => 'jr-audit-void',
         'INVENTORY_UPDATE' => 'jr-audit-inventory',
+        'EXPORT' => 'jr-audit-action-export',
     ];
 @endphp
 
@@ -64,8 +65,8 @@
 
                     <button type="submit" class="btn btn-primary btn-pill">Apply</button>
 
-                    {{-- Built in a later step (Excel export): shown, not working yet. --}}
-                    <button type="button" class="btn btn-outline-primary btn-pill" disabled>Export Excel</button>
+                    {{-- Jumps to the Export card on the right (below the table on a narrow screen). --}}
+                    <a href="#exportCard" class="btn btn-outline-primary btn-pill">Export Excel</a>
                 </form>
 
                 @if ($errors->any())
@@ -116,40 +117,61 @@
                 <p class="jr-audit-note mb-0">Read-only list. Newest records first.</p>
             </section>
 
-            {{-- ========== Right: Export to Excel (DISABLED until the Excel export step) ========== --}}
-            {{-- Not a form on purpose: there is no export route yet, so nothing can be sent. --}}
-            <aside class="card jr-audit-export" aria-labelledby="exportTitle">
+            {{-- ========== Right: Export to Excel (OWNER only, ExportController) ========== --}}
+            {{-- GET form: the browser downloads the .xlsx. Errors come back in the "export" error bag. --}}
+            @php
+                $exportErrors = $errors->getBag('export');
+                $report = old('report', 'sales'); // Sales Records is chosen by default
+            @endphp
+            <aside class="card jr-audit-export" id="exportCard" aria-labelledby="exportTitle">
                 <h2 class="jr-audit-export-title" id="exportTitle">Export to Excel</h2>
 
-                <fieldset class="jr-audit-export-what" disabled>
-                    <legend class="jr-audit-label">What to export</legend>
-                    <label class="jr-audit-option" for="exportInventory">
-                        <input class="form-check-input" type="radio" name="export_what" id="exportInventory" disabled> Inventory list
-                    </label>
-                    <label class="jr-audit-option" for="exportSales">
-                        <input class="form-check-input" type="radio" name="export_what" id="exportSales" disabled> Sales Records
-                    </label>
-                    <label class="jr-audit-option jr-audit-option-on" for="exportAudit">
-                        <input class="form-check-input" type="radio" name="export_what" id="exportAudit" checked disabled> Audit log
-                    </label>
-                </fieldset>
+                <form method="GET" action="{{ route('exports.download') }}" class="d-flex flex-column gap-3">
+                    <fieldset class="jr-audit-export-what">
+                        <legend class="jr-audit-label">What to export</legend>
+                        <label class="jr-audit-option" for="exportInventory">
+                            <input class="form-check-input" type="radio" name="report" value="inventory" id="exportInventory"
+                                   @checked($report === 'inventory')> Inventory list
+                        </label>
+                        <label class="jr-audit-option" for="exportSales">
+                            <input class="form-check-input" type="radio" name="report" value="sales" id="exportSales"
+                                   @checked($report === 'sales')> Sales Records
+                        </label>
+                        <label class="jr-audit-option" for="exportAudit">
+                            <input class="form-check-input" type="radio" name="report" value="audit" id="exportAudit"
+                                   @checked($report === 'audit')> Audit log
+                        </label>
+                        @if ($exportErrors->has('report'))
+                            <div class="invalid-feedback d-block">{{ $exportErrors->first('report') }}</div>
+                        @endif
+                    </fieldset>
 
-                <div class="jr-audit-export-dates">
-                    <div class="jr-audit-field">
-                        <label for="exportFrom" class="jr-audit-label">From</label>
-                        <input id="exportFrom" type="date" class="form-control" value="{{ $from->format('Y-m-d') }}" disabled>
+                    <div class="jr-audit-export-dates">
+                        <div class="jr-audit-field">
+                            <label for="exportFrom" class="jr-audit-label">From</label>
+                            {{-- max = today: the date picker does not offer future days (the server checks it too). --}}
+                            <input id="exportFrom" name="from" type="date" max="{{ now()->format('Y-m-d') }}"
+                                   class="form-control {{ $exportErrors->has('from') ? 'is-invalid' : '' }}"
+                                   value="{{ old('from', $from->format('Y-m-d')) }}">
+                            @if ($exportErrors->has('from'))
+                                <div class="invalid-feedback">{{ $exportErrors->first('from') }}</div>
+                            @endif
+                        </div>
+                        <div class="jr-audit-field">
+                            <label for="exportTo" class="jr-audit-label">To</label>
+                            <input id="exportTo" name="to" type="date" max="{{ now()->format('Y-m-d') }}"
+                                   class="form-control {{ $exportErrors->has('to') ? 'is-invalid' : '' }}"
+                                   value="{{ old('to', $to->format('Y-m-d')) }}">
+                            @if ($exportErrors->has('to'))
+                                <div class="invalid-feedback">{{ $exportErrors->first('to') }}</div>
+                            @endif
+                        </div>
                     </div>
-                    <div class="jr-audit-field">
-                        <label for="exportTo" class="jr-audit-label">To</label>
-                        <input id="exportTo" type="date" class="form-control" value="{{ $to->format('Y-m-d') }}" disabled>
-                    </div>
-                </div>
 
-                <p class="jr-audit-note mb-0">Dates apply to Sales Records and Audit log.</p>
+                    <p class="jr-audit-note mb-0">Dates apply to Sales Records and Audit log. Inventory list is always today.</p>
 
-                <button type="button" class="btn btn-primary jr-audit-download" disabled>Download .xlsx</button>
-
-                <p class="jr-audit-note mb-0">Excel export comes in a later step.</p>
+                    <button type="submit" class="btn btn-primary jr-audit-download">Download .xlsx</button>
+                </form>
             </aside>
         </div>
     </div>

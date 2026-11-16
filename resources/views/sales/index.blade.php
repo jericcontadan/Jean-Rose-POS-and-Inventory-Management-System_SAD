@@ -4,7 +4,7 @@
     Price is sale_item.unit_price (the price when it was sold), never today's product price.
     CANCELLED (voided) sales are shown grey with their reason and are NOT in the totals.
     Void (screen 8): the Void button opens the void card on the right (?void=<sale id>, mockup right part).
-    Confirm void posts to sales.void; SaleService::void() does the work. Export to Excel (Step 12) is shown but disabled.
+    Confirm void posts to sales.void; SaleService::void() does the work. Export to Excel downloads this day's Sales report (ExportController).
     All data comes from SalesRecordController / SaleService; this view only shows it.
 --}}
 @extends('layouts.app')
@@ -35,8 +35,11 @@
                     <button type="submit" class="btn btn-outline-primary btn-pill">Show</button>
                 </form>
 
-                {{-- Built in Step 12 (Excel export): shown, not working yet. --}}
-                <button type="button" class="btn btn-outline-primary btn-pill" disabled>Export to Excel</button>
+                {{-- The Sales report of the day shown (From = To = this date). Owner only, also checked on the server. --}}
+                @can('owner')
+                    <a href="{{ route('exports.download', ['report' => 'sales', 'from' => $date->format('Y-m-d'), 'to' => $date->format('Y-m-d')]) }}"
+                       class="btn btn-outline-primary btn-pill">Export to Excel</a>
+                @endcan
 
                 <button type="button" class="btn btn-primary btn-pill" data-bs-toggle="modal" data-bs-target="#closeSalesModal">Close</button>
             </div>
@@ -45,6 +48,11 @@
         @error('date')
             <div class="alert alert-danger mb-0" role="alert">{{ $message }}</div>
         @enderror
+
+        {{-- Export to Excel refused (for example a date in the future): the message comes back in the "export" bag. --}}
+        @if ($errors->getBag('export')->any())
+            <div class="alert alert-danger mb-0" role="alert">{{ $errors->getBag('export')->first() }}</div>
+        @endif
 
         {{-- Left: table and summary. Right: the void card (only when a sale was chosen). --}}
         <div class="jr-sales-layout">

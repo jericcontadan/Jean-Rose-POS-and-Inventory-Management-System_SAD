@@ -11,6 +11,7 @@ use App\Models\SaleItem;
 use App\Models\UserAccount;
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 // Pay Now and Void (docs/04-business-rules.md). Each one runs in ONE DB::transaction():
@@ -211,6 +212,17 @@ class SaleService
             ->orderBy('sale_id')
             ->paginate($perPage)
             ->withQueryString(); // keep ?date= on the page links
+    }
+
+    // Excel export (Sales report): every sale from the start of $from to the end of $to, oldest first, NOT paginated.
+    // Voided (CANCELLED) sales are included; SalesExport shows them as "Voided" and leaves them out of the totals.
+    public function salesForRange(CarbonInterface $from, CarbonInterface $to): Collection
+    {
+        return Sale::with(['cashier', 'items.batch.product'])
+            ->whereBetween('sale_datetime', [$from->copy()->startOfDay(), $to->copy()->endOfDay()])
+            ->orderBy('sale_datetime')
+            ->orderBy('sale_id')
+            ->get();
     }
 
     // Daily summary for the WHOLE day (not only the page shown). CANCELLED (voided) sales are counted

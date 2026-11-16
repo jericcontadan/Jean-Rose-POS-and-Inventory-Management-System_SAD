@@ -16,7 +16,7 @@ App login for Laravel: MySQL user `pos_user` (SELECT, INSERT, UPDATE, DELETE onl
 | inventory_history | transaction_id PK, inventory_id FK, batch_id FK, user_id FK, quantity_change (+ or -), transaction_type ENUM('RESTOCK','SALE','VOID'), transaction_datetime |
 | sale | sale_id PK, user_id FK, sale_datetime, subtotal, total_amount, discount_percent DECIMAL(5,2) default 0, sale_status ENUM('PAID','CANCELLED') default 'PAID', cash_received DECIMAL(12,2) null, change_amount DECIMAL(12,2) null, void_reason (255, null), voided_at DATETIME null, voided_by FK to user_account (null) |
 | sale_item | sale_item_id PK, sale_id FK (ON DELETE CASCADE), batch_id FK, quantity, unit_price, line_amount, discount_percent DECIMAL(5,2) |
-| audit_log | audit_log_id PK, user_id FK, sale_id FK (null, ON DELETE SET NULL), action_type ENUM('LOGIN','SALE','VOID','INVENTORY_UPDATE'), module ENUM('SALES','INVENTORY'), transaction_reference (50, null), details (255, null), created_at |
+| audit_log | audit_log_id PK, user_id FK, sale_id FK (null, ON DELETE SET NULL), action_type ENUM('LOGIN','SALE','VOID','INVENTORY_UPDATE','EXPORT'), module ENUM('SALES','INVENTORY'), transaction_reference (50, null), details (255, null), created_at |
 | password_reset_tokens | email PK (50), token (255, hashed), created_at (null). 11th table, added by Form B for FR-03. Already inside `jeanrose_pos.sql` |
 | alert_notification | alert_id PK, batch_id FK to product_batch, alert_type ENUM('LOW STOCK','OUT OF STOCK','NEAR EXPIRY'), created_at, emailed_at (null), resolved_at (null). 12th table, added by Form B for FR-07 |
 
@@ -33,6 +33,7 @@ Stock is tracked per BATCH. A product's stock is the sum of its batches' `invent
 - No `is_active` on product: a product with sales or history cannot be deleted (FK restrict). Show a friendly message.
 - No Close Sales storage: "Close Sales" shows and exports a daily summary only; it does not lock data.
 - `audit_log.module` allows only 'SALES' or 'INVENTORY': use 'SALES' for LOGIN, SALE, VOID rows and 'INVENTORY' for inventory/price/import rows.
+  EXPORT rows: 'SALES' for the Sales and Audit log reports, 'INVENTORY' for the Inventory report.
 
 ## Eloquent model setup (every model)
 ```php

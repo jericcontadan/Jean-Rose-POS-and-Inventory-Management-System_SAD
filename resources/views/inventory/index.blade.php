@@ -2,7 +2,7 @@
     Inventory (screen 9), OWNER only. Mockup: docs/design/05-inventory-owner.png.
     One table row per batch (stock and expiry are kept per batch). The status pill is inventory.stock_status as stored.
     Update stock and Update price (screen 10), + Add product, Edit and the trash (screen 12) work.
-    Import and Export are shown but disabled until their own build step.
+    Export Excel downloads the Inventory report (ExportController). Import is shown but disabled until its own build step.
     All data comes from InventoryController / InventoryService; this view only shows it.
 --}}
 @extends('layouts.app')
@@ -21,13 +21,16 @@
 
 @section('content')
     <div class="jr-inv">
-        {{-- Title and the page buttons (Import and Export are built in a later step) --}}
+        {{-- Title and the page buttons (Import is built in a later step) --}}
         <div class="jr-inv-head">
             <h1 class="jr-page-title">Inventory</h1>
             <div class="jr-inv-head-actions">
                 <a href="{{ route('products.create') }}" class="btn btn-primary btn-pill">+ Add product</a>
                 <button type="button" class="btn btn-outline-primary btn-pill" disabled>Import Excel</button>
-                <button type="button" class="btn btn-outline-primary btn-pill" disabled>Export Excel</button>
+                {{-- The Inventory report as .xlsx. Owner only, also checked on the server. --}}
+                @can('owner')
+                    <a href="{{ route('exports.download', ['report' => 'inventory']) }}" class="btn btn-outline-primary btn-pill">Export Excel</a>
+                @endcan
             </div>
         </div>
 

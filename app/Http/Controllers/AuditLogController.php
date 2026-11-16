@@ -10,7 +10,7 @@ use Illuminate\View\View;
 
 // Audit Log (screen 13, FR-09). OWNER only (route group can:owner).
 // READ ONLY: this controller only has index(). There is no edit or delete, on purpose (T18).
-// Export to Excel is shown but disabled (built in a later step).
+// Export to Excel: the card on this page sends its form to ExportController (exports.download).
 class AuditLogController extends Controller
 {
     public function __construct(private AuditService $audit)
