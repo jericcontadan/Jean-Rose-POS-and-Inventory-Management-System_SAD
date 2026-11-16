@@ -6,6 +6,7 @@ use App\Models\AuditLog;
 use App\Models\UserAccount;
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 // The ONLY place that writes to audit_log (docs/08-architecture.md, rule 5).
@@ -13,12 +14,12 @@ use Illuminate\Support\Collection;
 class AuditService
 {
     // The values of audit_log.action_type (also the Action filter on the Audit Log screen).
-    public const ACTIONS = ['LOGIN', 'SALE', 'VOID', 'INVENTORY_UPDATE'];
+    public const ACTIONS = ['LOGIN', 'SALE', 'VOID', 'INVENTORY_UPDATE', 'EXPORT'];
 
     /**
      * Save one audit row.
      *
-     * $action: LOGIN, SALE, VOID or INVENTORY_UPDATE
+     * $action: LOGIN, SALE, VOID, INVENTORY_UPDATE or EXPORT
      * $module: SALES or INVENTORY
      * $ref:    receipt number like 'S-0001' (or null)
      */
@@ -54,14 +55,26 @@ class AuditService
         ?string $action = null,
         int $perPage = 50,
     ): LengthAwarePaginator {
-        return AuditLog::with('user')
-            ->whereBetween('created_at', [$from->copy()->startOfDay(), $to->copy()->endOfDay()])
+        return $this->baseQuery($from, $to)
             ->when($userId, fn ($query) => $query->where('user_id', $userId))
             ->when($action, fn ($query) => $query->where('action_type', $action))
-            ->orderByDesc('created_at')
-            ->orderByDesc('audit_log_id') // same second: the row saved last comes first
             ->paginate($perPage)
             ->withQueryString(); // keep the filters on the page links
+    }
+
+    // Excel export (Audit log report): every row in the date range, newest first, NOT paginated.
+    public function forExport(CarbonInterface $from, CarbonInterface $to): Collection
+    {
+        return $this->baseQuery($from, $to)->get();
+    }
+
+    // Rows from the start of $from to the end of $to with their user, newest first (shared by the screen and the export).
+    private function baseQuery(CarbonInterface $from, CarbonInterface $to): Builder
+    {
+        return AuditLog::with('user')
+            ->whereBetween('created_at', [$from->copy()->startOfDay(), $to->copy()->endOfDay()])
+            ->orderByDesc('created_at')
+            ->orderByDesc('audit_log_id'); // same second: the row saved last comes first
     }
 
     // Every account for the User filter (inactive ones too: their old rows are still in the log).

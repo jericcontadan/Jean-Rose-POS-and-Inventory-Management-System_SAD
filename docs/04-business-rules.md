@@ -49,7 +49,8 @@ If one sale needs more than one batch, split it into several `sale_item` rows (o
 
 ## Audit log
 Write a row for: login (LOGIN, SALES), pay (SALE, SALES), void (VOID, SALES), restock, price change, add/edit/delete product,
-Excel import (INVENTORY_UPDATE, INVENTORY). The audit log is read-only in the app.
+Excel import (INVENTORY_UPDATE, INVENTORY), Excel export (EXPORT, module SALES for Sales/Audit log, INVENTORY for Inventory;
+details like `Sales report 2026-11-16 to 2026-11-16`). The audit log is read-only in the app.
 
 ## Login and security
 - `username` + password, only `is_active = 1`. Wrong login shows one generic message. Limit to 5 tries per minute.
@@ -73,7 +74,12 @@ Excel import (INVENTORY_UPDATE, INVENTORY). The audit log is read-only in the ap
 - Same response whether or not the account exists. Only active accounts. Each link or code works once.
 
 ## Excel (maatwebsite/excel)
-- Export: Sales Records by date range, Inventory list, Audit log (OWNER only).
+- Export: Sales Records by date range, Inventory list, Audit log (OWNER only). Card on the Audit Log page, GET `/exports/download`.
+  Dates: empty = today, To not before From, no future dates. File names `JeanRose_Sales_<from>_to_<to>.xlsx`,
+  `JeanRose_Inventory_<today>.xlsx`, `JeanRose_AuditLog_<from>_to_<to>.xlsx`. Bold header, peso format, real Excel dates.
+  Sales report ends with a TOTAL row that counts COMPLETED (PAID) sales only; voided sales are listed as "Voided".
+  Zero is always written as 0 / ₱0.00, never a blank cell (TOTAL row, Discount, Qty). A report with no rows gets one row
+  saying so ("No sales in this date range", "No products in the inventory", "No audit records in this date range").
 - Import (planned): template columns `product_number, product_name, category_name, supplier_name, cost_price, unit_price,
   batch_number, expiry_date, quantity, reorder_level`. Validate first, show rows with errors, save only valid rows in a transaction,
   default `image_path = 'images/placeholder.png'`, write an audit_log row.

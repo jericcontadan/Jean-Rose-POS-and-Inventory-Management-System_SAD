@@ -259,19 +259,18 @@ class AuditLogTest extends TestCase
         $this->assertSame($before, AuditLog::count());
     }
 
-    // ---------- export (later step) ----------
+    // ---------- export (Excel export step; the full tests are in ExcelExportTest) ----------
 
-    public function test_export_is_shown_but_disabled(): void
+    public function test_export_card_is_a_working_form(): void
     {
         $this->get('/audit-log')
             ->assertOk()
-            ->assertSee('disabled>Export Excel</button>', false)
-            ->assertSee('disabled>Download .xlsx</button>', false)
+            ->assertSee('href="#exportCard"', false)                          // "Export Excel" jumps to the card
+            ->assertSee('action="'.route('exports.download').'"', false)
+            ->assertDontSee('disabled>Download .xlsx</button>', false)
             ->assertSee('Export to Excel');
 
-        // Excel export is built later: no export route yet.
-        $exportRoutes = collect(Route::getRoutes()->getRoutes())
-            ->filter(fn ($route) => str_contains($route->uri(), 'export'));
-        $this->assertCount(0, $exportRoutes);
+        // The only export route is the owner-only download (GET, so it changes nothing but the audit row).
+        $this->assertTrue(Route::has('exports.download'));
     }
 }

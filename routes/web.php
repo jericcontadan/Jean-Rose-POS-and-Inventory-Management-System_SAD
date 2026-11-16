@@ -3,6 +3,7 @@
 use App\Http\Controllers\AlertController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ExportController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\PaymentController;
@@ -74,4 +75,7 @@ Route::middleware(['auth', 'can:owner'])->group(function () {
 
     // Audit Log: READ ONLY. GET only, on purpose: there is no route to edit or delete audit rows (T18).
     Route::get('/audit-log', [AuditLogController::class, 'index'])->name('audit.index');
+
+    // Excel export (the Export card on the Audit Log page): Sales, Inventory or Audit log as .xlsx.
+    Route::get('/exports/download', [ExportController::class, 'download'])->name('exports.download');
 });

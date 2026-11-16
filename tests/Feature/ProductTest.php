@@ -558,7 +558,7 @@ class ProductTest extends TestCase
             ->assertSee('data-confirm="Delete batch B0 of Serum? This cannot be undone."', false)
             ->assertDontSee('disabled>+ Add product', false)
             ->assertSee('disabled>Import Excel</button>', false)
-            ->assertSee('disabled>Export Excel</button>', false);
+            ->assertSee('href="'.e(route('exports.download', ['report' => 'inventory'])).'"', false); // Export works now
 
         $this->get(route('products.create'))
             ->assertOk()

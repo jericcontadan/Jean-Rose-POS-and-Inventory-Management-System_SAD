@@ -8,6 +8,7 @@
 --     voided_at, voided_by
 --   * alert_notification is created
 --   * password_reset_tokens is created
+--   * audit_log.action_type also allows 'EXPORT' (Excel export)
 --
 -- Back up the database first (Server > Data Export).
 -- ============================================================
@@ -83,6 +84,11 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
   token       VARCHAR(255) NOT NULL,
   created_at  DATETIME NULL
 ) ENGINE=InnoDB;
+
+-- 4. Excel export rows in the audit log: add 'EXPORT' to action_type.
+--    Safe to run again: it always sets the same full list, and existing rows keep their values.
+ALTER TABLE audit_log
+  MODIFY action_type ENUM('LOGIN','SALE','VOID','INVENTORY_UPDATE','EXPORT') NOT NULL;
 
 -- Clean up the helper procedures
 DROP PROCEDURE IF EXISTS jr_add_column;

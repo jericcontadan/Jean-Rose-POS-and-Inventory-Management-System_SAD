@@ -993,12 +993,13 @@ h1, h2, h3, h4, h5, h6, .btn {
 .jr-audit-sale      { background: var(--jr-ok-bg);          color: var(--jr-ok-text); }
 .jr-audit-void      { background: var(--jr-danger);         color: #FFFFFF; }
 .jr-audit-inventory { background: var(--jr-near-expiry-bg); color: var(--jr-near-expiry-text); }
+.jr-audit-action-export { background: var(--jr-primary-soft); color: var(--jr-primary-dark); }
 
 .jr-audit-pages .pagination { margin: 0; justify-content: flex-end; }
 .jr-audit-pages .page-link { min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
 .jr-audit-note { font-size: 14px; color: var(--jr-muted); }
 
-/* Export to Excel card (right). Shown but disabled until the Excel export step. */
+/* Export to Excel card (right): Inventory list, Sales Records or Audit log as .xlsx. */
 .jr-audit-export {
     flex: 1 1 320px;
     max-width: 400px;
@@ -1020,8 +1021,13 @@ h1, h2, h3, h4, h5, h6, .btn {
     border-radius: 14px;
     font-weight: 700;
 }
+.jr-audit-option { cursor: pointer; }
 .jr-audit-option .form-check-input { width: 20px; height: 20px; margin: 0; }
-.jr-audit-option-on { border-color: var(--jr-primary); background: var(--jr-fill); }
+/* Our pink radio, not Bootstrap's built-in blue (Bootstrap's radio colour ignores --bs-primary). */
+.jr-audit-option .form-check-input:checked { background-color: var(--jr-primary); border-color: var(--jr-primary); }
+.jr-audit-option .form-check-input:focus { border-color: var(--jr-primary); box-shadow: 0 0 0 .25rem var(--jr-primary-soft); }
+/* The chosen option gets a pink border and fill. */
+.jr-audit-option:has(.form-check-input:checked) { border-color: var(--jr-primary); background: var(--jr-fill); }
 .jr-audit-export-dates { display: flex; gap: 12px; }
 .jr-audit-export-dates > .jr-audit-field { flex: 1 1 0; }
 .jr-audit-download { min-height: 56px; border-radius: 14px; font-size: 17px; }

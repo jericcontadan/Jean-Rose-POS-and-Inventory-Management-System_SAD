@@ -439,4 +439,20 @@ class InventoryService
             default => "{$row['product_name']} · expires {$row['expiry_date']->format('m/d/Y')}",
         };
     }
+
+    // ---------- Reading only ----------
+
+    // Excel export (Inventory report): every stock row with its batch, product and category,
+    // sorted by product name, then the batch that expires first. Only SELECTs, never changes stock.
+    public function rowsForExport(): Collection
+    {
+        return Inventory::with('batch.product.category')
+            ->join('product_batch', 'product_batch.batch_id', '=', 'inventory.batch_id')
+            ->join('product', 'product.product_id', '=', 'product_batch.product_id')
+            ->orderBy('product.product_name')
+            ->orderBy('product_batch.expiry_date')
+            ->orderBy('inventory.inventory_id')
+            ->select('inventory.*')
+            ->get();
+    }
 }
