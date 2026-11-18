@@ -64,11 +64,18 @@ details like `Sales report 2026-11-16 to 2026-11-16`). The audit log is read-onl
     If an open row of another type exists for the batch, set its `resolved_at = now()` first. Never create a duplicate open row.
   - status is OKAY: set `resolved_at = now()` on the batch's open rows.
 - `/alerts` lists the open rows with product, batch, quantity, expiry. The Alerts button shows the count of open rows.
-- Daily email at 08:00 (`Asia/Manila`) to active OWNER accounts through Gmail: the open rows with `emailed_at IS NULL`. After sending,
-  set `emailed_at = now()` on them. If there are none, send nothing. Not by SMS.
+- Daily email at 08:00 (`Asia/Manila`) to active OWNER accounts: the open rows with `emailed_at IS NULL`. After sending,
+  set `emailed_at = now()` on them. If there are none, send nothing. Not by SMS. If the email fails (Brevo and Gmail both),
+  `emailed_at` stays empty and the next run tries again.
+
+## Email delivery (all emails)
+- Every email (password reset, daily alert) goes through the Brevo Transactional Email REST API first, with Gmail SMTP as
+  the backup: if Brevo answers anything but 201 (400, 401, 429, 5xx) or times out after 10 seconds, the same email is sent by SMTP.
+- `POS_MAIL_VIA=brevo` (default) or `smtp`. An empty `BREVO_API_KEY` means SMTP only. Sender: "Jean Rose POS" <`MAIL_FROM_ADDRESS`>
+  (must be verified in Brevo). Brevo free plan: 300 emails per day. See `docs/api/brevo-integration.md`.
 
 ## Password recovery (FR-03)
-- Gmail option: Laravel's password broker with table `password_reset_tokens`; because the column is `password_hash`, save the new
+- Email option (Brevo API, Gmail SMTP backup): Laravel's password broker with table `password_reset_tokens`; because the column is `password_hash`, save the new
   password with `$user->password_hash = Hash::make($password)`.
 - SMS option (planned): 6-digit code stored hashed in `password_reset_tokens.token`, valid 10 minutes, max 5 tries, sent by Semaphore.
 - Same response whether or not the account exists. Only active accounts. Each link or code works once.

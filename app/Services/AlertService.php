@@ -8,7 +8,6 @@ use App\Models\Inventory;
 use App\Models\UserAccount;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Mail;
 
 // The ONLY code that writes alert_notification (docs/08-architecture.md, rule 4).
 // An "open" alert is a row with resolved_at = null. Each batch has at most ONE open alert per type,
@@ -17,6 +16,10 @@ class AlertService
 {
     // The order of the groups on the /alerts page and in the email.
     public const TYPES = [StockStatusService::LOW, StockStatusService::OUT, StockStatusService::NEAR];
+
+    public function __construct(private BrevoMailService $mailer)
+    {
+    }
 
     // Run right after an inventory row's stock_status was refreshed.
     public function sync(Inventory $inventory): void
@@ -82,9 +85,10 @@ class AlertService
             return 0; // keep emailed_at empty so tomorrow's run tries again
         }
 
-        // Mail settings (log mailer locally, Gmail SMTP on the server) come from .env through config/mail.php.
+        // Sent through the Brevo API, with Gmail SMTP as backup (BrevoMailService). If both fail it throws,
+        // so the line below never runs and these alerts stay "not emailed" for the next run.
         foreach ($owners as $owner) {
-            Mail::to($owner->email)->send(new DailyStockAlertMail($alerts));
+            $this->mailer->send($owner->email, new DailyStockAlertMail($alerts));
         }
 
         // Mark only the rows that were in this email (a new alert made meanwhile goes out tomorrow).

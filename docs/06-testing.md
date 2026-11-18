@@ -36,6 +36,7 @@ The rubric grades Functionality and Testing (30%): core use cases work, test log
 | T20 | Excel export | File downloads with correct rows (owner only) |
 | T21 | Daily alert email | Sent only when un-emailed alerts exist, to owners; `emailed_at` set; second run sends nothing |
 | T23 | Alert tracking | Low stock creates one open `alert_notification` row; no duplicate on repeat; restock to OKAY sets `resolved_at` |
+| T24 | Brevo email API (`BrevoMailTest`) | 201 sends by Brevo only (messageId logged); 401, 500, timeout fall back to Gmail SMTP; request has URL, `api-key` header, JSON body; reset and daily alert use it; both failing keeps the same reset message and `emailed_at` empty |
 | T22 | Tablet check | Layout fits 1024 and 1280 px, buttons usable by touch |
 
 ## Test log (copy rows here as you test)

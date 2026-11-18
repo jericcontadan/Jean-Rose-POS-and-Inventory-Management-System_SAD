@@ -1,0 +1,56 @@
+{
+  "info": {
+    "name": "Jean Rose POS - Brevo Transactional Email API",
+    "description": "Tests the external API the POS uses for all emails (docs/api/brevo-integration.md). Put your key in the brevo_api_key variable as a Current value only. Never save a real key in this file.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "brevo_api_key", "value": "", "type": "string" },
+    { "key": "to_email", "value": "", "type": "string" },
+    { "key": "sender_email", "value": "jeanrosepos@gmail.com", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Send transactional email",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "api-key", "value": "{{brevo_api_key}}", "type": "text" },
+          { "key": "accept", "value": "application/json", "type": "text" },
+          { "key": "content-type", "value": "application/json", "type": "text" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sender\": { \"name\": \"Jean Rose POS\", \"email\": \"{{sender_email}}\" },\n  \"to\": [ { \"email\": \"{{to_email}}\" } ],\n  \"subject\": \"Jean Rose: stock and expiry alert (Postman test)\",\n  \"htmlContent\": \"<html><body><h2 style='color:#c2185b'>Jean Rose POS</h2><p>This is a test of the Brevo Transactional Email API.</p></body></html>\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "https://api.brevo.com/v3/smtp/email",
+          "protocol": "https",
+          "host": ["api", "brevo", "com"],
+          "path": ["v3", "smtp", "email"]
+        },
+        "description": "Expected: 201 Created with a messageId. Wrong key: 401 unauthorized. Missing sender: 400."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 201 Created', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "pm.test('Response has a messageId', function () {",
+              "    pm.expect(pm.response.json()).to.have.property('messageId');",
+              "});",
+              "pm.test('Answers within 10 seconds (our app timeout)', function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(10000);",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
