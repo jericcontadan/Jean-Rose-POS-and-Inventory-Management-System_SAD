@@ -20,6 +20,11 @@
                 <p class="jr-login-lead">Log in to start selling.</p>
             </div>
 
+            {{-- Green message after a successful password reset. --}}
+            @if (session('success'))
+                <div class="alert alert-success mb-0" role="status">{{ session('success') }}</div>
+            @endif
+
             {{-- One error box for all login errors (wrong login, inactive, too many tries, empty fields). --}}
             @if ($errors->any())
                 <div class="alert alert-danger mb-0" role="alert">{{ $errors->first() }}</div>
@@ -48,14 +53,12 @@
                         </svg>
                     </button>
                 </div>
+                {{-- Forgot and Reset Password (screen 2). --}}
+                <a href="{{ route('password.request') }}" class="jr-login-forgot">Forgot password?</a>
             </div>
 
             <button type="submit" class="btn btn-primary jr-login-btn">Log in</button>
 
-            {{-- Shown once Step 11 (Forgot and Reset Password) adds this route. --}}
-            @if (Route::has('password.request'))
-                <a href="{{ route('password.request') }}" class="jr-login-link">Forgot password?</a>
-            @endif
         </form>
     </section>
 </div>

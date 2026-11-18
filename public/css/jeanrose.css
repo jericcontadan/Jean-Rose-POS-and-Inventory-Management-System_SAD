@@ -384,6 +384,41 @@ h1, h2, h3, h4, h5, h6, .btn {
 .jr-password-toggle[aria-pressed="true"] { color: var(--jr-primary); }
 .jr-login-btn { min-height: 56px; border-radius: 14px; font-weight: 700; font-size: 18px; }
 .jr-login-link { text-align: center; font-weight: 700; color: var(--jr-primary); padding: 10px 0; }
+/* "Forgot password?" right under the password box (44px tall touch target) */
+.jr-login-forgot { display: inline-flex; align-items: center; min-height: 44px; margin-top: 4px; font-weight: 700; color: var(--jr-primary); }
+
+/* Forgot and Reset Password (mockup: docs/design/02-forgot-reset-password.png). Uses the .jr-login-card classes above. */
+.jr-reset { min-height: 100vh; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 24px 16px 48px; }
+.jr-reset-brand { display: flex; flex-direction: column; align-items: center; line-height: 1; color: var(--jr-primary); }
+.jr-reset-brand-name { font-family: 'Parisienne', cursive; font-size: 50px; }
+.jr-reset-brand-tag { font-family: var(--jr-font-head); font-weight: 600; font-size: 10px; letter-spacing: 2.6px; margin-top: 2px; }
+.jr-reset-card { max-width: 540px; padding: 36px; gap: 18px; }
+.jr-reset-step { align-self: flex-start; background: var(--jr-primary); color: #FFFFFF; font-size: 14px; font-weight: 700; padding: 4px 14px; border-radius: 14px; }
+.jr-reset-note { margin: 0; font-size: 14px; color: var(--jr-muted); text-align: center; }
+/* "Send the reset by" choice: Gmail (selected) and SMS (shown, disabled until it is built) */
+.jr-reset-by { border: 0; margin: 0; padding: 0; }
+.jr-reset-options { display: flex; gap: 12px; }
+.jr-reset-option {
+    flex: 1 1 0;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    min-height: 44px;
+    padding: 14px;
+    border: 2px solid var(--jr-border);
+    border-radius: 16px;
+    background: var(--jr-panel);
+    cursor: pointer;
+}
+.jr-reset-option input { width: 20px; height: 20px; margin: 0; accent-color: var(--jr-primary); flex-shrink: 0; }
+.jr-reset-option.is-selected { border-color: var(--jr-primary); background: var(--jr-fill); }
+.jr-reset-option.is-disabled { opacity: 0.55; cursor: not-allowed; }
+.jr-reset-option-text { display: flex; flex-direction: column; }
+.jr-reset-option-title { font-weight: 700; font-size: 16px; }
+.jr-reset-option-sub { font-size: 14px; color: var(--jr-muted); }
+@media (max-width: 575.98px) {
+    .jr-reset-options { flex-direction: column; }
+}
 
 /* ---------- 5. Smaller screens ---------- */
 /* Tablet landscape 1024-1199px: a little less page padding */
@@ -994,6 +1029,7 @@ h1, h2, h3, h4, h5, h6, .btn {
 .jr-audit-void      { background: var(--jr-danger);         color: #FFFFFF; }
 .jr-audit-inventory { background: var(--jr-near-expiry-bg); color: var(--jr-near-expiry-text); }
 .jr-audit-action-export { background: var(--jr-primary-soft); color: var(--jr-primary-dark); }
+.jr-audit-action-reset { background: var(--jr-primary-soft); color: var(--jr-primary-dark); }
 
 .jr-audit-pages .pagination { margin: 0; justify-content: flex-end; }
 .jr-audit-pages .page-link { min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }

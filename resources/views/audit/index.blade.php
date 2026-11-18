@@ -16,6 +16,7 @@
         'VOID' => 'jr-audit-void',
         'INVENTORY_UPDATE' => 'jr-audit-inventory',
         'EXPORT' => 'jr-audit-action-export',
+        'PASSWORD_RESET' => 'jr-audit-action-reset',
     ];
 @endphp
 
