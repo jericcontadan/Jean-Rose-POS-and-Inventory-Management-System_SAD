@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS `jeanrose_pos`.`audit_log` (
   `audit_log_id` INT NOT NULL AUTO_INCREMENT,
   `user_id` INT NOT NULL,
   `sale_id` INT NULL DEFAULT NULL,
-  `action_type` ENUM('LOGIN', 'SALE', 'VOID', 'INVENTORY_UPDATE', 'EXPORT') NOT NULL,
+  `action_type` ENUM('LOGIN', 'SALE', 'VOID', 'INVENTORY_UPDATE', 'EXPORT', 'PASSWORD_RESET') NOT NULL,
   `module` ENUM('SALES', 'INVENTORY') NOT NULL,
   `transaction_reference` VARCHAR(50) NULL DEFAULT NULL,
   `details` VARCHAR(255) NULL DEFAULT NULL,

@@ -14,13 +14,13 @@ use Illuminate\Support\Collection;
 class AuditService
 {
     // The values of audit_log.action_type (also the Action filter on the Audit Log screen).
-    public const ACTIONS = ['LOGIN', 'SALE', 'VOID', 'INVENTORY_UPDATE', 'EXPORT'];
+    public const ACTIONS = ['LOGIN', 'SALE', 'VOID', 'INVENTORY_UPDATE', 'EXPORT', 'PASSWORD_RESET'];
 
     /**
      * Save one audit row.
      *
-     * $action: LOGIN, SALE, VOID, INVENTORY_UPDATE or EXPORT
-     * $module: SALES or INVENTORY
+     * $action: LOGIN, SALE, VOID, INVENTORY_UPDATE, EXPORT or PASSWORD_RESET
+     * $module: SALES or INVENTORY (LOGIN and PASSWORD_RESET use SALES)
      * $ref:    receipt number like 'S-0001' (or null)
      */
     public function log(

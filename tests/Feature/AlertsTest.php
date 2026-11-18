@@ -10,9 +10,11 @@ use App\Models\UserAccount;
 use App\Services\AlertService;
 use App\Services\InventoryService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Tests\Feature\Concerns\CreatesPosData;
+use Tests\Feature\Concerns\FakesMailFailure;
 use Tests\TestCase;
 
 // Alerts + daily email (extra 8): T21 and T23 from docs/06-testing.md, plus: /alerts count matches the header,
@@ -23,6 +25,7 @@ class AlertsTest extends TestCase
 {
     use CreatesPosData;
     use DatabaseTransactions;
+    use FakesMailFailure;
 
     private UserAccount $owner;
     private UserAccount $cashier;
@@ -220,6 +223,27 @@ class AlertsTest extends TestCase
         // Second run: nothing new, so nothing more is sent.
         $this->sendDaily();
         $this->assertCount(1, Mail::sent(DailyStockAlertMail::class, $toOwner));
+    }
+
+    public function test_gmail_failure_is_logged_and_the_command_fails_without_marking_alerts(): void
+    {
+        $p = $this->makeMockupAlerts();
+        $lotionAlert = $this->openAlerts($p['out'])->first();
+        $this->makeMailFail();
+        Log::spy();
+
+        // No crash: an error message and exit code 1 (FAILURE).
+        $this->artisan('pos:send-daily-alerts')
+            ->expectsOutputToContain('Alert email could not be sent')
+            ->assertFailed();
+
+        // Not marked as emailed, so the next run tries again.
+        $this->assertNull($lotionAlert->fresh()->emailed_at);
+
+        Log::shouldHaveReceived('error')->once()->withArgs(
+            fn (string $message, array $context) => $message === 'Daily alert email could not be sent.'
+                && str_contains($context['error'], 'UnexpectedResponseException')
+        );
     }
 
     public function test_no_new_alerts_sends_nothing(): void
