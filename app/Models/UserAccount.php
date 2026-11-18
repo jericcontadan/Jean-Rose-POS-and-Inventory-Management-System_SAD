@@ -3,9 +3,9 @@
 namespace App\Models;
 
 use App\Mail\PasswordResetMail;
+use App\Services\BrevoMailService;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Support\Facades\Mail;
 
 // A person who can log in: only OWNER or CASHIER (table user_account).
 class UserAccount extends Authenticatable
@@ -40,12 +40,12 @@ class UserAccount extends Authenticatable
     }
 
     // Called by Laravel's password broker with the PLAIN token (only the hash is saved in the database).
-    // Sends our pink email instead of Laravel's default one.
+    // Sends our pink email instead of Laravel's default one, through the Brevo API (Gmail SMTP as backup).
     public function sendPasswordResetNotification($token): void
     {
         $url = route('password.reset', ['token' => $token, 'email' => $this->email]);
 
-        Mail::to($this->email)->send(new PasswordResetMail($url));
+        app(BrevoMailService::class)->send($this->email, new PasswordResetMail($url));
     }
 
     public function isOwner(): bool

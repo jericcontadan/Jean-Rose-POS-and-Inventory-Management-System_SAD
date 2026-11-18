@@ -28,6 +28,8 @@
         <env name="DB_DATABASE" value="jeanrose_pos_test"/>
         <env name="DB_URL" value=""/>
         <env name="MAIL_MAILER" value="array"/>
+        <!-- Blank key: tests never call the real Brevo API. tests/Feature/BrevoMailTest.php sets a fake key and uses Http::fake(). -->
+        <env name="BREVO_API_KEY" value=""/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="APP_TIMEZONE" value="Asia/Manila"/>

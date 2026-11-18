@@ -4,7 +4,7 @@ Full step-by-step is in the team's "Jean Rose POS Deployment Guide (Laravel + My
 
 ## Target
 One Ubuntu server on AWS (Singapore region) running Nginx + PHP 8.3 FPM, MySQL 8 (RDS, or MySQL on the same server for lower cost),
-HTTPS with a free Let's Encrypt certificate, S3 for backups, GitHub Actions for tests and deploy, Gmail for email.
+HTTPS with a free Let's Encrypt certificate, S3 for backups, GitHub Actions for tests and deploy, Brevo Transactional Email API for email (Gmail SMTP as backup).
 Laragon is only for laptops. The owner never installs anything.
 
 ## Order
@@ -13,7 +13,8 @@ Laragon is only for laptops. The owner never installs anything.
 3. MySQL 8.0: load `docs/sql/jeanrose_pos.sql` (all 12 tables); create `pos_user` with a strong password.
 4. EC2 server: install nginx, php8.3-fpm and extensions, composer, git, certbot. Clone the repo to `/var/www/jeanrose-pos`.
 5. Server `.env`: `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://...`, DB values, `SESSION_DRIVER=file`, `CACHE_STORE=file`,
-   `QUEUE_CONNECTION=sync`, `SESSION_SECURE_COOKIE=true`, `APP_TIMEZONE=Asia/Manila`, Gmail SMTP with the Google App password.
+   `QUEUE_CONNECTION=sync`, `SESSION_SECURE_COOKIE=true`, `APP_TIMEZONE=Asia/Manila`, Gmail SMTP with the Google App password,
+   `BREVO_API_KEY` (from Brevo > SMTP & API > API keys), `POS_MAIL_VIA=brevo`, `MAIL_FROM_ADDRESS` = the Brevo-verified sender.
 6. `composer install --no-dev --optimize-autoloader`, `php artisan key:generate`, `php artisan config:cache route:cache view:cache`,
    `php artisan storage:link`, folder permissions for `storage` and `bootstrap/cache`.
    `storage:link` makes uploaded product images visible: it links `public/storage` to `storage/app/public`. Run it once per server.

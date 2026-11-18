@@ -10,4 +10,8 @@ return [
     // Discount given on each sale line sold from a NEAR EXPIRY batch.
     'near_expiry_discount_percent' => (float) env('NEAR_EXPIRY_DISCOUNT_PERCENT', 10),
 
+    // How emails are sent: 'brevo' = Brevo REST API first, Gmail SMTP as backup; 'smtp' = Gmail SMTP only.
+    // If BREVO_API_KEY is empty, BrevoMailService uses SMTP automatically (docs/api/brevo-integration.md).
+    'mail_via' => env('POS_MAIL_VIA', 'brevo'),
+
 ];

@@ -25,7 +25,8 @@ flowchart LR
   DB -->|nightly dump| S3B
   SSM --> N
   N -.-> CW
-  N -->|SMTP| GM["Gmail<br/>reset link + daily alert"]
+  N -->|"HTTPS REST API"| BR["Brevo Transactional Email API<br/>reset link + daily alert"]
+  N -.->|"SMTP backup if Brevo fails"| GM["Gmail SMTP"]
   N -.->|"HTTPS API (planned)"| SMS["Semaphore SMS<br/>6-digit reset code"]
   GH["GitHub repo + Actions<br/>test, then deploy"] --> SSM
 ```
@@ -65,12 +66,14 @@ app/
     Requests/       LoginRequest, PayRequest, VoidRequest, ProductRequest, StockRequest, PriceRequest, ImportRequest
   Models/           UserAccount, Category, Supplier, Product, ProductBatch, Inventory, InventoryHistory, Sale, SaleItem, AuditLog,
                     AlertNotification
-  Services/         SaleService, InventoryService, StockStatusService, BatchPickerService, AuditService, AlertService, (Sms - planned)
+  Services/         SaleService, InventoryService, StockStatusService, BatchPickerService, AuditService, AlertService, BrevoMailService,
+                    (Sms - planned)
   Exports/          SalesExport, InventoryExport, AuditLogExport
   Imports/          ProductsImport (planned)
-  Mail/             DailyStockAlertMail
+  Mail/             DailyStockAlertMail, PasswordResetMail
   Console/Commands/ RefreshStockStatus, SendDailyAlertEmail
-config/pos.php      near_expiry_days, near_expiry_discount_percent (from .env)
+config/pos.php      near_expiry_days, near_expiry_discount_percent, mail_via (brevo|smtp) (from .env)
+config/services.php brevo.key (BREVO_API_KEY from .env)
 routes/web.php      guest group, auth group, owner group (can:owner)
 routes/console.php  schedule: RefreshStockStatus 06:00, SendDailyAlertEmail 08:00 (Asia/Manila)
 resources/views/    layouts/app.blade.php (viewport, Bootstrap CDN, role-based menu), auth/, pos/, receipts/,
@@ -91,7 +94,10 @@ docs/               these files
 6. **Models** map tables only (see `02-database-schema.md`), with relationships, no business logic.
 7. **Owner-only** routes live in one route group with `can:owner`; the Gate is defined once in `AppServiceProvider`.
 8. **Validation** in FormRequests. **Views** only show data; no queries in Blade.
-9. External services (Gmail, Semaphore) are called from services or Mailables, never from views or controllers directly.
+9. External services (Brevo, Gmail, Semaphore) are called from services or Mailables, never from views or controllers directly.
+10. **Every email goes through `BrevoMailService::send(to, mailable)`.** It posts the rendered Mailable to the Brevo
+    Transactional Email API (`POST https://api.brevo.com/v3/smtp/email`). On any non-201 answer or a timeout it logs the
+    status and Brevo's message (never the key) and sends the same Mailable through Gmail SMTP. Details: `docs/api/brevo-integration.md`.
 
 ### Pay Now flow
 ```mermaid
