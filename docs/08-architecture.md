@@ -38,7 +38,7 @@ flowchart LR
 | HTTPS | Free Let's Encrypt certificate on Nginx, HTTP redirects to HTTPS |
 | Firewall chain | internet -> app (80, 443; SSH only from team IPs) -> database (3306 only from the app) |
 | Secrets | Only in the server `.env`, never in GitHub |
-| Deploy | GitHub Actions runs tests; deploy by Systems Manager or manual `deploy.sh` |
+| Deploy | GitHub Actions runs the tests; deploy by hand with the update steps in `docs/07-deployment.md` (section 9) |
 | Backups | Daily database backup kept 7 days plus nightly dump to S3 |
 | Monitoring | CloudWatch alarms (CPU, status) with email alerts |
 | Not used (cost) | Load balancer, NAT Gateway, Docker, Multi-AZ. Can be added later |
