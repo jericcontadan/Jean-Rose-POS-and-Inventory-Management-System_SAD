@@ -8,6 +8,7 @@ use App\Services\AlertService;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -26,6 +27,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // On the server, every link (route(), url(), the reset password email) starts with APP_URL,
+        // never with the Host header the browser sent. This stops a fake Host from putting a
+        // stranger's website into the reset email link.
+        if ($this->app->isProduction()) {
+            URL::forceRootUrl(config('app.url'));
+
+            if (str_starts_with((string) config('app.url'), 'https://')) {
+                URL::forceScheme('https');
+            }
+        }
+
         // Page links (Sales Records) use Bootstrap 5 markup, since the layout uses Bootstrap.
         Paginator::useBootstrapFive();
 
