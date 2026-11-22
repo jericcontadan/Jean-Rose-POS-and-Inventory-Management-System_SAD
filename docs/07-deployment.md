@@ -1,14 +1,14 @@
-# 07 - Deployment checklist (AWS Ubuntu + Nginx + PHP 8.3 + MySQL 8)
+# 07 - Deployment checklist (Azure Ubuntu + Nginx + PHP 8.3 + MySQL 8)
 
 The full step-by-step guide is the team's "Jean Rose POS Deployment Guide (Laravel + MySQL on AWS)". This file is the short checklist:
 tick each box on the server. Laragon is only for laptops. The owner never installs anything.
 
-Target: one Ubuntu server on AWS (Singapore, ap-southeast-1), Nginx + PHP 8.3 FPM, MySQL 8 (RDS or on the same server),
+Target: one Ubuntu server (virtual machine) on Azure, Nginx + PHP 8.3 FPM, MySQL 8 on the same server,
 HTTPS with Let's Encrypt, Brevo Transactional Email API for email (Gmail SMTP as backup). App folder: `/var/www/jeanrose-pos`.
 
 ## 1. AWS account and network
 - [ ] AWS account (owner's email and billing if possible), budget alert, MFA, region ap-southeast-1.
-- [ ] Security groups: app server (80 and 443 open, SSH only from team IPs); database (3306 only from the app server).
+- [ ] Firewall: app server (80 and 443 open; SSH with keys only, reachable by GitHub Actions, see section 9); database (3306 not open to the internet).
 
 ## 2. Server packages and PHP extensions
 - [ ] `sudo apt install nginx git unzip certbot python3-certbot-nginx`
@@ -70,9 +70,9 @@ Never run `php artisan migrate`, `migrate:fresh` or `db:wipe` (and never `compos
 ## 6. Laravel setup commands
 - [ ] `php artisan key:generate`: **first setup only**. Running it again logs everyone out and breaks encrypted data.
 - [ ] `php artisan storage:link`: once per server. Links `public/storage` to `storage/app/public`, so uploaded product images show.
-- [ ] Permissions (the web server user is `www-data`):
+- [ ] Permissions (`azureuser` deploys, the web server user is `www-data`):
       ```
-      sudo chown -R www-data:www-data storage bootstrap/cache
+      sudo chown -R azureuser:www-data storage bootstrap/cache
       sudo chmod -R 775 storage bootstrap/cache
       ```
 - [ ] `php artisan config:cache`, `php artisan route:cache`, `php artisan view:cache`
@@ -94,23 +94,73 @@ Without cron, near-expiry status never updates and the owner never gets the aler
       `* * * * * cd /var/www/jeanrose-pos && php artisan schedule:run >> /dev/null 2>&1`
 - [ ] Check: `sudo -u www-data php artisan schedule:list` shows both jobs and their next run time.
 
-## 9. Every update (after go-live)
+## 9. Every update: CI/CD (automatic deploy)
+Files: `.github/workflows/tests.yml`, `.github/workflows/deploy.yml`, `scripts/deploy.sh`.
+
+### How it works
+1. A pull request is merged into `main`. The **Tests** workflow runs (the same tests as `php artisan test`).
+2. When Tests finishes on `main`, the **Deploy** workflow starts. It continues only if Tests **passed**. Red tests = no deploy.
+3. Deploy logs in to the server by SSH and runs `bash /var/www/jeanrose-pos/scripts/deploy.sh`.
+4. `deploy.sh`: maintenance page on, get the newest `main`, `composer install --no-dev`, rebuild the config, route and view caches,
+   check the `public/storage` link, fix permissions, reload PHP, maintenance page off.
+5. If any step fails, the script still puts the site back up, and the Deploy run on GitHub turns red.
+
+Only one deploy runs at a time; the next one waits. The script **never** runs `migrate`, `key:generate` or any SQL file, and never
+touches `.env`. A schema change is still done by hand in MySQL Workbench, before the code that needs it is merged.
+Merge by pull request only: the script always takes the newest `main`, so a direct push could go live before its tests finish.
+
+### The 3 GitHub secrets
+Settings > Secrets and variables > Actions. The values are never written in a file, an issue or a chat.
+
+| Secret | What it holds |
+|---|---|
+| `DEPLOY_HOST` | The server's address |
+| `DEPLOY_USER` | The Linux user that deploys |
+| `DEPLOY_SSH_KEY` | The whole **private** SSH key made only for deploying. Its public half is in that user's `~/.ssh/authorized_keys` |
+
+These are not the same as the server's read-only **deploy key**, which only lets the server read the GitHub repository.
+
+### Server needs (once)
+- [ ] `azureuser` owns `/var/www/jeanrose-pos` and has passwordless `sudo`.
+- [ ] GitHub's servers can reach port 22. Their addresses change, so a "team IPs only" rule in the Azure network security group blocks the
+      deploy. Allow SSH with keys only (`PasswordAuthentication no` in the SSH settings).
+- [ ] First time only: `deploy.sh` is not on the server yet, so the first automatic deploy fails. After the first merge, log in once and run
+      `cd /var/www/jeanrose-pos && git fetch origin main && git reset --hard origin/main`, then redeploy manually (next part).
+
+### Redeploy manually
+- On GitHub: **Actions > Deploy > Run workflow** (branch `main`). It does not wait for the tests.
+- Or on the server: `bash /var/www/jeanrose-pos/scripts/deploy.sh`
+
+Use this after a failed deploy. After a `.env` change, `php artisan config:cache` on the server is enough.
+
+After every deploy check: `curl -s https://<your domain>/health` must print `ok`.
+
+### If a deploy fails
+1. Read the log: Actions > Deploy > the red run. The last line before `DEPLOY FAILED` shows the problem.
+2. The site is up again, but maybe with **half-updated code**. Open it and check `/health` right away.
+3. Fix the problem and redeploy, or roll back.
+
+### Roll back (go back to an older commit)
+On the server:
 ```
 cd /var/www/jeanrose-pos
-php artisan down
-git pull
-composer install --no-dev --optimize-autoloader
+git log --oneline -10                 # find the last good commit
+php artisan down --retry=15
+git reset --hard <good commit>
+composer install --no-dev --optimize-autoloader --no-interaction
 php artisan config:cache && php artisan route:cache && php artisan view:cache
-sudo chown -R www-data:www-data storage bootstrap/cache
+sudo chown -R azureuser:www-data storage bootstrap/cache
+sudo chmod -R 775 storage bootstrap/cache
 sudo systemctl reload php8.3-fpm
 php artisan up
-curl -s https://<your domain>/health      # must print: ok
 ```
-Do NOT run key:generate, storage:link or any SQL file during an update.
+If `php artisan` does not start at all, do the `git reset` and `composer install` lines first.
+Then **revert the bad pull request on GitHub** (Revert button). If not, the next deploy brings the bad code back.
+A rollback changes code only. It does not change the database.
 
 ## 10. Backups and monitoring
 - [ ] Daily database backup kept 7 days, plus a nightly `mysqldump` to S3. Also back up `storage/app/public` (product images). Test one restore.
-- [ ] CloudWatch alarms with email alerts. GitHub Actions runs the tests on every push.
+- [ ] CloudWatch alarms with email alerts. GitHub Actions runs the tests on every push and deploys `main` (section 9).
 
 ## Before go-live
 - [ ] Delete demo and test accounts and sample data. Create the real owner account with a password the owner sets. Change all passwords and keys.

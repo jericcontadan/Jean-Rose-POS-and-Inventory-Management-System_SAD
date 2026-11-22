@@ -1,5 +1,8 @@
 * text=auto eol=lf
 
+# Shell scripts run on the Ubuntu server: Windows CRLF line endings would make bash fail.
+*.sh text eol=lf
+
 *.blade.php diff=html
 *.css diff=css
 *.html diff=html
