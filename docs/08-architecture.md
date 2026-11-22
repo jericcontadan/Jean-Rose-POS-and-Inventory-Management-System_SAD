@@ -2,43 +2,43 @@
 
 Two views: where the system runs (cloud) and how the code is organized (application). Claude Code must follow both.
 
-## A. Cloud architecture (capstone version, AWS Singapore ap-southeast-1)
-Picture: `docs/architecture/cloud-architecture.png`
+## A. Cloud architecture (capstone version, Azure)
+Picture: `docs/architecture/cloud-architecture.png` (first AWS plan; the diagram below shows the live Azure server)
 
 ```mermaid
 flowchart LR
   U["Owner / Cashier<br/>tablet or PC browser"] -->|HTTPS 443| N
-  subgraph AWS["AWS Cloud (ap-southeast-1)"]
-    subgraph PUB["Public subnet (80, 443 open)"]
-      N["EC2 app server<br/>Nginx + PHP-FPM<br/>Laravel POS"]
-    end
-    subgraph PRIV["Private DB subnets (3306 only from app)"]
+  subgraph AZ["Azure"]
+    subgraph VM["Ubuntu VM (80, 443 open; SSH with keys only)"]
+      N["Nginx + PHP-FPM<br/>Laravel POS"]
       DB[("MySQL 8<br/>jeanrose_pos")]
+      DS["scripts/deploy.sh"]
     end
+  end
+  subgraph OLD["From the first AWS plan (Azure replacement to be decided)"]
     S3A["S3: product images"]
     S3B["S3: backups"]
-    SSM["Systems Manager<br/>deploy, no SSH"]
     CW["CloudWatch + SNS<br/>alarms by email"]
   end
   N -->|SQL 3306| DB
   N --> S3A
   DB -->|nightly dump| S3B
-  SSM --> N
+  DS -->|update code, reload PHP| N
   N -.-> CW
   N -->|"HTTPS REST API"| BR["Brevo Transactional Email API<br/>reset link + daily alert"]
   N -.->|"SMTP backup if Brevo fails"| GM["Gmail SMTP"]
   N -.->|"HTTPS API (planned)"| SMS["Semaphore SMS<br/>6-digit reset code"]
-  GH["GitHub repo + Actions<br/>test, then deploy"] --> SSM
+  GH["GitHub repo + Actions<br/>Tests, then Deploy"] -->|"SSH (only if tests pass)"| DS
 ```
 
 | Part | Decision |
 |---|---|
-| Server | One small EC2 (Ubuntu), Elastic IP, Nginx + PHP 8.3 FPM, Laravel in `/var/www/jeanrose-pos` |
-| Database | MySQL 8.0 in private subnets (RDS, or MySQL on the same server for lower cost). Only the app can connect, using `pos_user` |
+| Server | One small Azure VM (Ubuntu), Nginx + PHP 8.3 FPM, Laravel in `/var/www/jeanrose-pos` |
+| Database | MySQL 8 on the same server, not open to the internet. Only the app connects, using `pos_user` |
 | HTTPS | Free Let's Encrypt certificate on Nginx, HTTP redirects to HTTPS |
-| Firewall chain | internet -> app (80, 443; SSH only from team IPs) -> database (3306 only from the app) |
-| Secrets | Only in the server `.env`, never in GitHub |
-| Deploy | GitHub Actions runs the tests; deploy by hand with the update steps in `docs/07-deployment.md` (section 9) |
+| Firewall | internet -> app (80, 443). SSH (22) with keys only; GitHub Actions needs it to deploy. 3306 closed to the internet |
+| Secrets | App secrets only in the server `.env`. The 3 deploy secrets (`DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`) only in GitHub Actions secrets. Never in files |
+| Deploy (CI/CD) | Merge to `main` -> Tests workflow -> if it passes, Deploy workflow -> SSH -> `scripts/deploy.sh`. One deploy at a time, never runs migrations or SQL. Redeploy and rollback: `docs/07-deployment.md` (section 9) |
 | Backups | Daily database backup kept 7 days plus nightly dump to S3 |
 | Monitoring | CloudWatch alarms (CPU, status) with email alerts |
 | Not used (cost) | Load balancer, NAT Gateway, Docker, Multi-AZ. Can be added later |
@@ -79,6 +79,8 @@ routes/console.php  schedule: RefreshStockStatus 06:00, SendDailyAlertEmail 08:0
 resources/views/    layouts/app.blade.php (viewport, Bootstrap CDN, role-based menu), auth/, pos/, receipts/,
                     sales/, inventory/, products/, alerts/, audit/, errors/403.blade.php, partials/
 tests/Feature/      LoginTest, RolesTest, PosTest, PayNowTest, VoidTest, StockStatusTest, InventoryTest, AuditLogTest
+scripts/deploy.sh   update script that runs on the server (called by GitHub Actions)
+.github/workflows/  tests.yml (every push and pull request), deploy.yml (after Tests passes on main)
 docs/               these files
 ```
 

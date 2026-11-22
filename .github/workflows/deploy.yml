@@ -1,0 +1,57 @@
+# Deploys main to the live server AFTER the Tests workflow passed (docs/07-deployment.md, section 9).
+# The server does the work itself: this only logs in by SSH and starts scripts/deploy.sh.
+name: Deploy
+
+on:
+  # Runs every time the Tests workflow finishes on main (the job below checks that it passed).
+  workflow_run:
+    workflows: [Tests]
+    types: [completed]
+    branches: [main]
+  # "Run workflow" button on the Actions page, to deploy again by hand.
+  workflow_dispatch:
+
+# This workflow does not need to read or change anything on GitHub.
+permissions: {}
+
+jobs:
+  deploy:
+    # Only continue for a manual run, or when the tests of a PUSH to main passed.
+    # The push check matters: Tests also runs for pull requests, and a pull request
+    # from someone's fork can come from a branch that is also named "main".
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main')
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # Two deploys never run at once: the second one waits. A running deploy is never cancelled halfway.
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+
+    steps:
+      - name: Run deploy.sh on the server
+        # Secrets are in Settings > Secrets and variables > Actions. GitHub hides them in the log.
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          # Write the key to a temp file only we can read. It is deleted when this step ends.
+          key_file="$RUNNER_TEMP/deploy_key"
+          trap 'rm -f "$key_file"' EXIT
+          install -m 600 /dev/null "$key_file"
+          printf '%s\n' "$DEPLOY_SSH_KEY" | tr -d '\r' > "$key_file"
+
+          ssh -i "$key_file" \
+            -o IdentitiesOnly=yes \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=accept-new \
+            -o ConnectTimeout=20 \
+            -o ServerAliveInterval=30 \
+            "$DEPLOY_USER@$DEPLOY_HOST" \
+            "bash /var/www/jeanrose-pos/scripts/deploy.sh"
