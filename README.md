@@ -1,17 +1,21 @@
 # Jean Rose POS and Inventory Management System
 
-Capstone project (BSIS-3C, Team 4). A web app for a beauty products shop: point of sale, inventory
+Capstone project (BSIS-3C, Team 8). A web app for a beauty products shop: point of sale, inventory
 with batches and expiry, sales records, audit log, Excel import/export, and email alerts.
 Built for tablet and PC browsers.
 
 ## Stack
-Laravel 13 (PHP 8.3), MySQL 8, Blade + Bootstrap 5 (CDN), Laravel Excel, Gmail SMTP.
+Laravel 13 (PHP 8.3), MySQL 8, Blade + Bootstrap 5 (CDN), Laravel Excel, Brevo email API (Gmail SMTP as backup).
+Hosted on a Microsoft Azure VM (Ubuntu 24.04, Nginx, HTTPS) and deployed automatically with GitHub Actions.
+
+## Architecture
+See [docs/architecture](docs/architecture/README.md) for the cloud and DevOps architecture, diagrams, and the SDS.
 
 ## Setup on your laptop (Windows, Laragon)
 1. Install Laragon (Full), Git, VS Code, MySQL Workbench, Postman. In Laragon click **Start All**.
 2. Clone the repo into `C:\laragon\www`:
    ```
-   git clone https://github.com/<owner>/<repo>.git jeanrose-pos
+   git clone https://github.com/jericcontadan/Jean-Rose-POS-and-Inventory-Management-System_SAD.git jeanrose-pos
    cd jeanrose-pos
    composer install
    copy .env.example .env
@@ -29,7 +33,12 @@ Laravel 13 (PHP 8.3), MySQL 8, Blade + Bootstrap 5 (CDN), Laravel Excel, Gmail S
 4. Edit `.env` (never commit it): `DB_DATABASE=jeanrose_pos`, `DB_USERNAME=pos_user`,
    `DB_PASSWORD=YourPassword`, `SESSION_DRIVER=file`, `CACHE_STORE=file`, `QUEUE_CONNECTION=sync`.
    For local email use Mailpit: `MAIL_HOST=127.0.0.1`, `MAIL_PORT=1025` (inbox at http://localhost:8025).
+   The live server sends email through Brevo, with Gmail SMTP as backup. Its keys are kept only on the server.
 5. Run `php artisan config:clear` then `php artisan serve` and open http://localhost:8000.
+
+## Deployment
+Every merge to `main` runs the automated tests. If they pass, GitHub Actions deploys to the Azure server.
+Never push directly to `main`; always use a pull request.
 
 ## Rules
 - Do NOT run `php artisan migrate`. The schema is `docs/sql/jeanrose_pos.sql` (12 tables).
