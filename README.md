@@ -7,6 +7,16 @@ Built for tablet and PC browsers.
 
 Capstone project, BSIS-3C, Technological University of the Philippines – Manila.
 
+## Live System and Test Accounts
+Live site: https://jeanrosepos.eastasia.cloudapp.azure.com
+
+| Role | Username | Password |
+|---|---|---|
+| Owner (admin) | `owner` | `jeanrose2026` |
+| Cashier | `cashier` | `jeanrosecashier` |
+
+These test accounts are for grading. The system uses sample data, and these passwords will be changed after grading.
+
 ## Team 8
 - Salcedo, Tristan
 - Contadan, Jeric
