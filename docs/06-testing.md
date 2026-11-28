@@ -4,9 +4,9 @@ The rubric grades Functionality and Testing (30%): core use cases work, test log
 
 ## How we test
 - **Feature tests** (Laravel) in `tests/Feature`, using the `DatabaseTransactions` trait so each test rolls back.
-  Use a separate database `jeanrose_pos_test` created from `jeanrose_pos.sql` (set it in `phpunit.xml` or `.env.testing`),
+  Use a separate database `jeanrose_pos_test` created from `docs/sql/jeanrose_pos_test.sql` (set it in `phpunit.xml` or `.env.testing`),
   so tests never touch your working data. Run: `php artisan test`.
-- **GitHub Actions** runs the same tests on every push against a throwaway MySQL with `jeanrose_pos.sql`.
+- **GitHub Actions** runs the same tests on every push against a throwaway MySQL built from `docs/sql/jeanrose_pos_test.sql`.
 - **Postman**: one collection with the main requests. Save request, expected result, actual result and a screenshot.
 - **Manual tests** on a real tablet over HTTPS (login, Pay Now, print, keyboard types).
 - Mock external services in tests (`Mail::fake()`, `Http::fake()`) so no real email or SMS is sent.

@@ -6,10 +6,19 @@
 --            voided_at, voided_by (+ foreign key to user_account)
 --   2. NEW table password_reset_tokens (FR-03, Form B)
 --   3. NEW table alert_notification (FR-07)
+--   4. Upgrade v2:
+--      sale_item: item_status, void_reason, voided_at, voided_by
+--                 (+ foreign key), product_name, product_number
+--      sale: discount_type, discount_id_number,
+--            discount_customer_name, discount_amount
+--      inventory.stock_status and alert_notification.alert_type
+--      also allow 'EXPIRED'; inventory_history.transaction_type
+--      also allows 'ADJUSTMENT'
 --
 -- WARNING: this script DROPS and recreates every table, so it
 -- erases existing data. Use it only to build a fresh database.
--- To keep existing data, run jeanrose_pos_upgrade.sql instead.
+-- To keep existing data, run jeanrose_pos_upgrade.sql and then
+-- jeanrose_pos_upgrade_v2.sql instead.
 
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
@@ -46,6 +55,8 @@ COLLATE = utf8mb4_0900_ai_ci;
 -- -----------------------------------------------------
 -- Table `jeanrose_pos`.`sale`
 -- NEW: cash_received, change_amount, void_reason, voided_at, voided_by
+-- NEW (v2): discount_type, discount_id_number, discount_customer_name,
+--           discount_amount
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `jeanrose_pos`.`sale` ;
 
@@ -56,6 +67,10 @@ CREATE TABLE IF NOT EXISTS `jeanrose_pos`.`sale` (
   `subtotal` DECIMAL(12,2) NOT NULL,
   `total_amount` DECIMAL(12,2) NOT NULL,
   `discount_percent` DECIMAL(5,2) NOT NULL DEFAULT '0.00',
+  `discount_type` ENUM('NONE', 'SENIOR', 'PWD') NOT NULL DEFAULT 'NONE',
+  `discount_id_number` VARCHAR(30) NULL DEFAULT NULL,
+  `discount_customer_name` VARCHAR(120) NULL DEFAULT NULL,
+  `discount_amount` DECIMAL(12,2) NOT NULL DEFAULT '0.00',
   `sale_status` ENUM('PAID', 'CANCELLED') NOT NULL DEFAULT 'PAID',
   `cash_received` DECIMAL(12,2) NULL DEFAULT NULL,
   `change_amount` DECIMAL(12,2) NULL DEFAULT NULL,
@@ -214,7 +229,7 @@ CREATE TABLE IF NOT EXISTS `jeanrose_pos`.`inventory` (
   `batch_id` INT NOT NULL,
   `quantity_on_hand` INT NOT NULL DEFAULT '0',
   `reorder_level` INT NOT NULL DEFAULT '0',
-  `stock_status` ENUM('LOW STOCK', 'OUT OF STOCK', 'OKAY', 'NEAR EXPIRY') NOT NULL DEFAULT 'OKAY',
+  `stock_status` ENUM('LOW STOCK', 'OUT OF STOCK', 'OKAY', 'NEAR EXPIRY', 'EXPIRED') NOT NULL DEFAULT 'OKAY',
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`inventory_id`),
   INDEX `fk_inventory_batch` (`batch_id` ASC) VISIBLE,
@@ -240,7 +255,7 @@ CREATE TABLE IF NOT EXISTS `jeanrose_pos`.`inventory_history` (
   `batch_id` INT NOT NULL,
   `user_id` INT NOT NULL,
   `quantity_change` INT NOT NULL,
-  `transaction_type` ENUM('RESTOCK', 'SALE', 'VOID') NOT NULL,
+  `transaction_type` ENUM('RESTOCK', 'SALE', 'VOID', 'ADJUSTMENT') NOT NULL,
   `transaction_datetime` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`transaction_id`),
   INDEX `fk_invhist_inventory` (`inventory_id` ASC) VISIBLE,
@@ -268,6 +283,8 @@ COLLATE = utf8mb4_0900_ai_ci;
 
 -- -----------------------------------------------------
 -- Table `jeanrose_pos`.`sale_item`
+-- NEW (v2): item_status, void_reason, voided_at, voided_by,
+--           product_name, product_number (snapshot at sale time)
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `jeanrose_pos`.`sale_item` ;
 
@@ -279,9 +296,21 @@ CREATE TABLE IF NOT EXISTS `jeanrose_pos`.`sale_item` (
   `unit_price` DECIMAL(12,2) NOT NULL,
   `line_amount` DECIMAL(12,2) NOT NULL,
   `discount_percent` DECIMAL(5,2) NOT NULL DEFAULT '0.00',
+  `item_status` ENUM('SOLD', 'VOIDED') NOT NULL DEFAULT 'SOLD',
+  `void_reason` VARCHAR(255) NULL DEFAULT NULL,
+  `voided_at` DATETIME NULL DEFAULT NULL,
+  `voided_by` INT NULL DEFAULT NULL,
+  `product_name` VARCHAR(150) NULL DEFAULT NULL,
+  `product_number` VARCHAR(60) NULL DEFAULT NULL,
   PRIMARY KEY (`sale_item_id`),
   INDEX `fk_saleitem_sale` (`sale_id` ASC) VISIBLE,
   INDEX `fk_saleitem_batch` (`batch_id` ASC) VISIBLE,
+  INDEX `fk_saleitem_voided_by` (`voided_by` ASC) VISIBLE,
+  CONSTRAINT `fk_saleitem_voided_by`
+    FOREIGN KEY (`voided_by`)
+    REFERENCES `jeanrose_pos`.`user_account` (`user_id`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
   CONSTRAINT `fk_saleitem_batch`
     FOREIGN KEY (`batch_id`)
     REFERENCES `jeanrose_pos`.`product_batch` (`batch_id`)
@@ -323,7 +352,7 @@ DROP TABLE IF EXISTS `jeanrose_pos`.`alert_notification` ;
 CREATE TABLE IF NOT EXISTS `jeanrose_pos`.`alert_notification` (
   `alert_id` INT NOT NULL AUTO_INCREMENT,
   `batch_id` INT NOT NULL,
-  `alert_type` ENUM('LOW STOCK', 'OUT OF STOCK', 'NEAR EXPIRY') NOT NULL,
+  `alert_type` ENUM('LOW STOCK', 'OUT OF STOCK', 'NEAR EXPIRY', 'EXPIRED') NOT NULL,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `emailed_at` DATETIME NULL DEFAULT NULL,
   `resolved_at` DATETIME NULL DEFAULT NULL,
