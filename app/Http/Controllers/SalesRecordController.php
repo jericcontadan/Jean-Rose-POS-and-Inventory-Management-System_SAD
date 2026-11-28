@@ -10,6 +10,7 @@ use App\Services\SaleService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Throwable;
 
@@ -30,6 +31,11 @@ class SalesRecordController extends Controller
             'void' => ['nullable', 'integer', 'min:1'],
             'void_item' => ['nullable', 'integer', 'min:1'], // opens the "void item" card for that sale_item
             'open' => ['nullable', 'integer', 'min:1'],      // shows the items of that sale already expanded
+            // Filter bar above the table (all optional; empty = All)
+            'q' => ['nullable', 'string', 'max:20'],                                   // receipt number
+            'status' => ['nullable', Rule::in(['PAID', 'CANCELLED', 'VOIDED_ITEMS'])],
+            'discount' => ['nullable', Rule::in(['SENIOR', 'PWD', 'NEAR_EXPIRY', 'NONE'])],
+            'cashier' => ['nullable', 'integer', 'min:1'],
         ]);
 
         // No date chosen: today in Asia/Manila (the app timezone in config/app.php).
@@ -40,10 +46,22 @@ class SalesRecordController extends Controller
         $voidSale = $this->sales->saleToVoid(isset($filters['void']) ? (int) $filters['void'] : null);
         $voidItem = $voidSale ? null : $this->sales->itemToVoid(isset($filters['void_item']) ? (int) $filters['void_item'] : null);
 
+        // The filters in use (empty ones left out). Page links and the Void links keep them.
+        $active = array_filter(
+            array_intersect_key($filters, array_flip(['q', 'status', 'discount', 'cashier'])),
+            fn ($value) => $value !== null && $value !== '',
+        );
+
         return view('sales.index', [
             'date' => $date,
-            'sales' => $this->sales->salesForDate($date),
+            'filters' => $active,
+            // date + filters: the query string the Void / Void item / Cancel links start from
+            'baseQuery' => ['date' => $date->format('Y-m-d')] + $active,
+            'cashiers' => $this->sales->cashiersForDate($date),
+            'sales' => $this->sales->salesForDate($date, $active),
+            // The cards show the WHOLE day (filters do not change them) and compare with the day before.
             'summary' => $this->sales->dailySummary($date),
+            'previous' => $this->sales->dailySummary($date->copy()->subDay()),
             'voidSale' => $voidSale,
             'voidItems' => $voidSale ? $this->sales->itemsSummary($voidSale) : null,
             'voidItem' => $voidItem,

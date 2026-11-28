@@ -11,45 +11,45 @@
     @if (empty($order['lines']))
         <p class="jr-empty mb-0">No items yet. Tap "Add to order" on a product.</p>
     @else
+        {{-- Only this list scrolls, so Subtotal, Total and Pay now always stay on screen. --}}
         <div class="jr-order-lines">
             @foreach ($order['lines'] as $line)
                 @php($name = $line['product']->product_name)
+                {{-- One compact row: name | − x2 + | amount | × --}}
                 <div class="jr-order-line">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="jr-order-thumb">
-                            @include('pos._product-image', ['product' => $line['product'], 'size' => 34])
-                        </div>
-                        <div class="flex-grow-1 min-w-0">
-                            <div class="jr-order-name">{{ $name }}</div>
-                            @if ($line['near_expiry'])
-                                <span class="jr-badge-near jr-badge-sm">near expiry −{{ $line['discount_text'] }}</span>
-                            @else
-                                <div class="jr-order-each">₱{{ number_format($line['unit_price'], 2) }} each</div>
-                            @endif
-                        </div>
-                        <div class="jr-order-amount">{{ number_format($line['line_total'], 2) }}</div>
+                    {{-- Near-expiry items get a small pink dot; the discount itself is listed under Subtotal. --}}
+                    <div class="jr-order-name-cell">
+                        @if ($line['near_expiry'])
+                            <span class="jr-order-near" title="Near-expiry discount −{{ $line['discount_text'] }}"
+                                  aria-label="Near-expiry discount"></span>
+                        @endif
+                        <span class="jr-order-name" title="{{ $name }}">{{ $name }}</span>
                     </div>
 
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center gap-1">
-                            <form method="POST" action="{{ route('pos.cart.decrease', $line['product']) }}">
-                                @csrf
-                                <button type="submit" class="jr-qty-btn" aria-label="Decrease {{ $name }} quantity">−</button>
-                            </form>
-                            <span class="jr-qty" aria-label="Quantity">x{{ $line['quantity'] }}</span>
-                            <form method="POST" action="{{ route('pos.cart.increase', $line['product']) }}">
-                                @csrf
-                                {{-- Disabled when the line already uses all sellable stock (the server checks too). --}}
-                                <button type="submit" class="jr-qty-btn" aria-label="Increase {{ $name }} quantity"
-                                        @disabled($line['quantity'] >= $line['available'])>+</button>
-                            </form>
-                        </div>
-                        <form method="POST" action="{{ route('pos.cart.remove', $line['product']) }}">
+                    <div class="jr-order-qty">
+                        <form method="POST" action="{{ route('pos.cart.decrease', $line['product']) }}">
                             @csrf
-                            @method('DELETE')
-                            <button type="submit" class="jr-remove-btn">Remove</button>
+                            <button type="submit" class="jr-qty-btn" aria-label="Decrease {{ $name }} quantity">−</button>
+                        </form>
+                        <span class="jr-qty" aria-label="Quantity">x{{ $line['quantity'] }}</span>
+                        <form method="POST" action="{{ route('pos.cart.increase', $line['product']) }}">
+                            @csrf
+                            {{-- Disabled when the line already uses all sellable stock (the server checks too). --}}
+                            <button type="submit" class="jr-qty-btn" aria-label="Increase {{ $name }} quantity"
+                                    @disabled($line['quantity'] >= $line['available'])>+</button>
                         </form>
                     </div>
+
+                    <div class="jr-order-amount">{{ number_format($line['line_total'], 2) }}</div>
+
+                    <form method="POST" action="{{ route('pos.cart.remove', $line['product']) }}">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="jr-remove-btn" aria-label="Remove {{ $name }}">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                                 stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+                        </button>
+                    </form>
                 </div>
             @endforeach
         </div>

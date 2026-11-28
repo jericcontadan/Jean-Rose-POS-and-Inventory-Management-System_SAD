@@ -277,6 +277,11 @@ h1, h2, h3, h4, h5, h6, .btn {
 
 .jr-signed-in { font-size: 15px; color: var(--jr-muted); }
 .jr-signed-in strong { color: var(--jr-text); }
+/* Phones: the header row has no room for "Owner"; Alerts, Log out and Menu stay (no sideways scroll) */
+@media (max-width: 599.98px) {
+    .jr-signed-in { display: none; }
+    .jr-header .ms-auto { gap: 8px !important; }
+}
 
 /* "Menu" button that shows the owner tabs on small screens (tap, not hover) */
 .jr-menu-btn {
@@ -397,6 +402,11 @@ h1, h2, h3, h4, h5, h6, .btn {
 .jr-reset-card { max-width: 540px; padding: 36px; gap: 18px; }
 .jr-reset-step { align-self: flex-start; background: var(--jr-primary); color: #FFFFFF; font-size: 14px; font-weight: 700; padding: 4px 14px; border-radius: 14px; }
 .jr-reset-note { margin: 0; font-size: 14px; color: var(--jr-muted); text-align: center; }
+/* Friendly 403 page (resources/views/errors/403.blade.php): the reset page look, centered, with a lock icon */
+.jr-error-page { justify-content: center; }
+.jr-error-card { text-align: center; align-items: stretch; }
+.jr-error-card .jr-login-title { font-size: 26px; }
+.jr-error-icon { align-self: center; width: 72px; height: 72px; border-radius: 50%; background: var(--jr-fill); color: var(--jr-primary); display: flex; align-items: center; justify-content: center; }
 /* "Send the reset by" choice: Gmail (selected) and SMS (shown, disabled until it is built) */
 .jr-reset-by { border: 0; margin: 0; padding: 0; }
 .jr-reset-options { display: flex; gap: 12px; }
@@ -498,7 +508,7 @@ h1, h2, h3, h4, h5, h6, .btn {
 
 /* Two columns: products (wide) and Order Details (360-440px). They stack on narrow screens. */
 .jr-pos { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
-.jr-pos-products { flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
+.jr-pos-products { flex: 999 1 500px; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
 
 /* Category pills */
 .jr-cat-pills { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -589,36 +599,46 @@ h1, h2, h3, h4, h5, h6, .btn {
 
 /* Order Details panel */
 .jr-order-panel {
-    flex: 1 1 360px;
+    flex: 1 1 420px;   /* 420px at 1024 wide, up to 440px on bigger screens */
     max-width: 440px;
     background: var(--jr-panel);
     border: 2px solid var(--jr-border);
     border-radius: var(--jr-radius-card);
-    padding: 24px;
+    padding: 20px 16px;
     display: flex;
     flex-direction: column;
     gap: 16px;
     box-shadow: 0 12px 32px var(--jr-primary-soft);
+    /* Stays on screen while the products scroll. Its height never passes the screen:
+       only the item list scrolls inside, so Subtotal, Total and Pay now are always visible.
+       130px = header bar + page padding. */
+    position: sticky;
+    top: 16px;
+    max-height: calc(100vh - 130px);
 }
+.jr-order-panel > * { flex-shrink: 0; }
 .jr-order-title { margin: 0; font-weight: 700; font-size: 22px; }
 .jr-chip { background: var(--jr-fill); color: var(--jr-text-strong); font-size: 14px; font-weight: 700; padding: 4px 12px; border-radius: 14px; }
-.jr-order-lines { display: flex; flex-direction: column; gap: 12px; }
-.jr-order-line { background: var(--jr-bg); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
-.jr-order-line form { margin: 0; }
-.jr-order-thumb {
-    width: 52px; height: 52px; flex: 0 0 52px;
-    border-radius: 12px;
-    background: var(--jr-fill);
-    display: flex; align-items: center; justify-content: center;
-    overflow: hidden;
+.jr-order-panel > .jr-order-lines {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex; flex-direction: column; gap: 6px;
+    margin-right: -8px; padding-right: 8px;   /* room for the scroll bar */
 }
-.jr-order-name { font-weight: 700; font-size: 17px; }
-.jr-order-each { font-size: 14px; color: var(--jr-muted); }
-.jr-order-amount { font-weight: 700; font-size: 17px; white-space: nowrap; }
-.jr-badge-sm { font-size: 13px; text-transform: none; padding: 1px 8px; }
+/* One compact row per item: name | − x2 + | amount | × */
+.jr-order-line { background: var(--jr-bg); border-radius: 12px; padding: 4px 2px 4px 10px; display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.jr-order-line form { margin: 0; }
+/* width: 0 + flex-grow: a long name never makes the panel wider, it is cut with "…" instead */
+.jr-order-name-cell { flex: 1 1 0; width: 0; min-width: 0; display: flex; align-items: center; gap: 6px; }
+.jr-order-name { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.jr-order-near { flex: 0 0 8px; width: 8px; height: 8px; border-radius: 50%; background: var(--jr-near-expiry-text); }
+.jr-order-qty { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+.jr-order-amount { font-weight: 700; font-size: 15px; white-space: nowrap; min-width: 64px; text-align: right; flex-shrink: 0; }
+.jr-badge-sm { font-size: 12px; text-transform: none; padding: 1px 6px; }
 .min-w-0 { min-width: 0; }
 
-/* − / + buttons (44px touch targets) and Remove */
+/* − / + buttons and the × remove button (44px touch targets) */
 .jr-qty-btn {
     width: 44px; height: 44px;
     border-radius: 12px;
@@ -628,15 +648,17 @@ h1, h2, h3, h4, h5, h6, .btn {
     font-size: 22px; font-weight: 700; line-height: 1;
 }
 .jr-qty-btn:disabled { opacity: 0.4; }
-.jr-qty { min-width: 40px; text-align: center; font-weight: 700; font-size: 18px; }
+.jr-qty { min-width: 30px; text-align: center; font-weight: 700; font-size: 16px; }
 .jr-remove-btn {
-    min-height: 44px;
-    padding: 0 12px;
+    width: 44px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0;
     border: 0;
+    border-radius: 12px;
     background: transparent;
     color: var(--jr-danger);
-    font-weight: 700; font-size: 15px;
 }
+.jr-remove-btn:active { background: var(--jr-fill); }
 
 /* Subtotal, discount lines, total */
 .jr-order-sums { border-top: 2px dashed var(--jr-border); padding-top: 14px; display: flex; flex-direction: column; gap: 8px; }
@@ -667,7 +689,7 @@ h1, h2, h3, h4, h5, h6, .btn {
 
 /* Narrow screens: the order panel takes the full width under the products */
 @media (max-width: 900px) {
-    .jr-order-panel { max-width: none; }
+    .jr-order-panel { max-width: none; position: static; max-height: none; }
 }
 
 /* ---------- 8. Payment box and receipt (mockup: docs/design/04-payment-receipt.png) ---------- */
@@ -731,9 +753,11 @@ h1, h2, h3, h4, h5, h6, .btn {
 .jr-discount-btn { display: inline-flex; align-items: center; cursor: pointer; margin: 0; }
 .btn-check:checked + .jr-discount-btn { border-color: var(--jr-primary); background: var(--jr-fill); color: var(--jr-primary); }
 .btn-check:focus-visible + .jr-discount-btn { outline: 3px solid var(--jr-primary); outline-offset: 2px; }
-.jr-discount-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+/* minmax(0, 1fr) and min-width: 0 let the two boxes shrink, so they never stick out of the card */
+.jr-discount-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+.jr-discount-fields > div { min-width: 0; }
 .jr-discount-fields[hidden] { display: none; }
-.jr-discount-input { min-height: 48px; border-radius: 14px; }
+.jr-discount-input { width: 100%; min-width: 0; min-height: 48px; border-radius: 14px; }
 
 /* Sales Records: Senior / PWD pill on the sale row */
 .jr-badge-senior {
@@ -762,27 +786,29 @@ h1, h2, h3, h4, h5, h6, .btn {
 .jr-pay-confirm { flex: 2 1 0; min-height: 56px; border-radius: 14px; font-size: 18px; font-weight: 700; }
 
 /* Receipt page */
-.jr-receipt-page { max-width: 420px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+/* Compact like an 80mm thermal receipt (about 300px of paper + padding) */
+.jr-receipt-page { max-width: 340px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
 .jr-receipt {
     background: var(--jr-panel);
     border: 2px dashed var(--jr-border);
     border-radius: 12px;
-    padding: 28px 28px 24px;
+    padding: 18px 16px 16px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
     font-family: ui-monospace, Menlo, Consolas, monospace;
-    font-size: 15px;
+    font-size: 13px;
+    line-height: 1.35;
 }
 .jr-receipt-shop {
     text-align: center;
     font-family: var(--jr-font-head);
     font-weight: 700;
-    font-size: 17px;
+    font-size: 15px;
     line-height: 1.25;
     color: var(--jr-primary);
 }
-.jr-receipt-heading { text-align: center; font-weight: 700; letter-spacing: 2px; }
+.jr-receipt-heading { text-align: center; font-weight: 700; letter-spacing: 2px; font-size: 12px; }
 /* VOIDED stamp on the receipt of a cancelled sale */
 .jr-receipt-void {
     display: flex;
@@ -796,21 +822,25 @@ h1, h2, h3, h4, h5, h6, .btn {
     padding: 8px;
     font-size: 14px;
 }
-.jr-receipt-void-stamp { font-family: var(--jr-font-head); font-weight: 800; font-size: 30px; letter-spacing: 6px; line-height: 1.1; }
+.jr-receipt-void-stamp { font-family: var(--jr-font-head); font-weight: 800; font-size: 24px; letter-spacing: 6px; line-height: 1.1; }
 .jr-receipt-block {
-    border-top: 2px dashed var(--jr-border);
-    padding-top: 12px;
+    border-top: 1px dashed var(--jr-border);
+    padding-top: 8px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
 }
-.jr-receipt-row { display: flex; justify-content: space-between; gap: 12px; }
+.jr-receipt-row { display: flex; justify-content: space-between; gap: 10px; }
 .jr-receipt-row > span:last-child { white-space: nowrap; text-align: right; }
-.jr-receipt-total { font-weight: 700; font-size: 18px; color: var(--jr-primary); }
+/* One line per item: name | 2 x 150.00 | amount */
+.jr-receipt-item { display: grid; grid-template-columns: minmax(0, 1fr) auto 64px; gap: 8px; align-items: baseline; }
+.jr-receipt-item > span:nth-child(2) { white-space: nowrap; color: var(--jr-muted); }
+.jr-receipt-item > span:last-child { white-space: nowrap; text-align: right; }
+.jr-receipt-total { font-weight: 700; font-size: 16px; color: var(--jr-primary); }
 .jr-receipt-thanks {
     text-align: center;
-    border-top: 2px dashed var(--jr-border);
-    padding-top: 12px;
+    border-top: 1px dashed var(--jr-border);
+    padding-top: 8px;
     font-family: var(--jr-font-head);
     font-weight: 600;
 }
@@ -835,7 +865,8 @@ h1, h2, h3, h4, h5, h6, .btn {
     .jr-receipt-block,
     .jr-receipt-thanks { border-top: 1px dashed #000000; }
     .jr-receipt-shop,
-    .jr-receipt-total { color: #000000; }
+    .jr-receipt-total,
+    .jr-receipt-item > span:nth-child(2) { color: #000000; }
 }
 
 /* ---------- 9. Inventory screen (mockup: docs/design/05-inventory-owner.png) ---------- */
@@ -905,31 +936,275 @@ h1, h2, h3, h4, h5, h6, .btn {
 }
 
 /* ---------- 10. Sales Records (mockup: docs/design/07-sales-records-void.png, left part) ---------- */
-.jr-sales { display: flex; flex-direction: column; gap: 20px; }
+/* Title + date bar, then the summary cards, then the table: 24px between each block */
+.jr-sales { display: flex; flex-direction: column; gap: 24px; }
 
-/* Title on the left; date, Export and Close on the right (bottom-aligned like the mockup) */
+/* Title (with the day in words) on the left; date, Export and End-of-day summary on the right */
 .jr-sales-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; }
+.jr-sales-day { margin-top: 4px; color: var(--jr-muted); font-weight: 600; }
 .jr-sales-head-actions { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
 .jr-sales-date-form { display: flex; align-items: flex-end; gap: 8px; margin: 0; }
 .jr-sales-date-field { display: flex; flex-direction: column; gap: 6px; }
 .jr-sales-date-label { font-size: 15px; font-weight: 700; }
 .jr-sales-head .jr-sales-date { width: 190px; background: var(--jr-panel); }
 
-/* Table card: white, rounded, scrolls sideways on narrow screens */
+/* Summary cards (the Dashboard card look), 5 in a row */
+.jr-sales-cards { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
+.jr-sales-cards .jr-dash-value { font-size: 22px; }
+.jr-sales-cards .jr-sales-card-total { color: var(--jr-primary); }
+@media (max-width: 900px) {
+    .jr-sales-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Table card: white, rounded. "clip" keeps the round corners without making a scroll box,
+   so the sticky header follows the page. Narrow screens scroll the table sideways instead. */
 .jr-sales-table-wrap {
     background: var(--jr-panel);
     border: 2px solid var(--jr-border);
     border-radius: 20px;
-    overflow-x: auto;
+    overflow: clip;
 }
-.jr-sales-table { min-width: 860px; margin: 0; }
-.jr-sales-table > thead th { color: #5C1B43; font-size: 14px; }
+@media (max-width: 999.98px) {
+    .jr-sales-table-wrap { overflow-x: auto; }
+}
 
-/* Receipt header row of each sale: S-0001, time, cashier, Receipt / Void */
-.jr-sales-table .jr-sales-sale-row > td { background: var(--jr-bg); padding-top: 8px; padding-bottom: 8px; }
-.jr-sales-receipt { font-family: var(--jr-font-head); font-weight: 700; margin-right: 8px; }
-.jr-sales-meta { color: var(--jr-muted); font-size: 15px; margin-right: 6px; }
-.jr-sales-actions { display: flex; gap: 8px; }
+/* Fixed layout: every column has a width (<colgroup>), so every row lines up with the header.
+   On wider screens the extra space is shared by all columns, so no column leaves a big gap. */
+.jr-sales-table { table-layout: fixed; width: 100%; min-width: 944px; margin: 0; }
+.jr-sales-table > thead th {
+    position: sticky; top: 0; z-index: 2;     /* stays visible while the page scrolls */
+    color: #5C1B43; font-size: 14px; padding: 12px 10px; white-space: nowrap;
+}
+.jr-sales-table > tbody > .jr-sales-sale-row > td { padding: 6px 10px; vertical-align: middle; }
+.jr-col-receipt  { width: 120px; }
+.jr-col-time     { width: 90px; }
+.jr-col-cashier  { width: 110px; }
+.jr-col-qtysold  { width: 80px; }
+.jr-col-money    { width: 112px; }   /* Discount and Total: the same width */
+.jr-col-status   { width: 130px; }
+.jr-col-actions  { width: 190px; }   /* Receipt 80 + gap 10 + Void 80 + cell padding 20 */
+
+/* One row per sale */
+.jr-sales-receipt { font-family: var(--jr-font-head); font-weight: 700; }
+.jr-sales-ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.jr-sales-sub { display: block; font-size: 12px; color: var(--jr-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.jr-sales-total-cell { font-weight: 700; }
+.jr-sales-original { font-size: 13px; }
+.jr-sales-status { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.jr-sales-status .jr-badge-voided { margin-right: 0; }
+/* "1 item voided" next to PAID */
+.jr-badge-itemvoid {
+    display: inline-block;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    white-space: nowrap;
+    background: var(--jr-low-bg);
+    color: var(--jr-low-text);
+}
+
+/* Row colors, in this order: zebra, voided grey, hover, open (the later rule wins) */
+.jr-sales-table > tbody > .jr-sales-sale-row { cursor: pointer; }
+.jr-sales-table > .jr-sales-group:nth-of-type(even) > .jr-sales-sale-row > td { background: #FFF8FC; }
+.jr-sales-table > .jr-sales-group.jr-sales-voided > .jr-sales-sale-row > td { background: #EFE8EC; }
+.jr-sales-table > .jr-sales-group > .jr-sales-sale-row:hover > td { background: #FFEEF7; }
+.jr-sales-table > .jr-sales-group.is-open > .jr-sales-sale-row > td { background: var(--jr-fill); }
+
+/* Arrow that opens the items (44px touch target); it turns when open */
+.jr-sales-chevron {
+    width: 44px; height: 44px;
+    margin-left: -8px;
+    padding: 0;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--jr-primary);
+    display: inline-flex; align-items: center; justify-content: center;
+    vertical-align: middle;
+}
+.jr-sales-chevron svg { transition: transform 0.15s; }
+.jr-sales-chevron[aria-expanded="true"] svg { transform: rotate(180deg); }
+.jr-sales-chevron:active { background: var(--jr-fill); }
+
+/* Receipt (pink outline) and Void (red outline): the same size in every row, never stretch.
+   (.jr-btn-void on the POS has flex: 1 and 56px height; the rules below reset it here.) */
+.jr-sales-actions { display: flex; align-items: center; gap: 10px; }
+.jr-sales-actions .jr-btn-row {
+    flex: 0 0 80px;
+    width: 80px;
+    min-height: 44px; height: 44px;
+    padding: 0 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 12px;
+}
+.jr-sales-table .jr-btn-void-sm {
+    /* Exactly the same box as Receipt (.jr-sales-actions .jr-btn-row): 80 x 44px, 2px border, 12px corners, 15px text */
+    flex: 0 0 80px;
+    width: 80px;
+    min-height: 44px; height: 44px;
+    padding: 0 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-width: 2px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;   /* same weight as Receipt */
+    /* Only the color differs: true red outline and text (not the pink of Receipt), so it is not tapped by mistake */
+    --bs-btn-border-color: var(--jr-error);
+    --bs-btn-color: var(--jr-error);
+    --bs-btn-hover-bg: #FFE5EA;
+    --bs-btn-hover-border-color: var(--jr-error);
+    --bs-btn-hover-color: var(--jr-error);
+    --bs-btn-active-bg: #FFE5EA;
+    --bs-btn-active-border-color: var(--jr-error);
+    --bs-btn-active-color: var(--jr-error);
+}
+.jr-sales-table .jr-btn-void-sm:hover,
+.jr-sales-table .jr-btn-void-sm:active { background: #FFE5EA; color: var(--jr-error); border-color: var(--jr-error); }
+.jr-sales-table .jr-btn-void-sm.jr-btn-void-on { background: var(--jr-error); color: #FFFFFF; border-color: var(--jr-error); }
+.jr-sales-table .jr-btn-void-item { flex-basis: 88px; width: 88px; }
+.jr-btn-slot { visibility: hidden; }
+
+/* The hidden row under each sale: no padding when closed, so it takes no space */
+.jr-sales-table > tbody > .jr-sales-details-row > td { padding: 0; border-bottom-width: 1px; }
+/* Open items: a tinted panel with a pink left border, indented under its sale, with a gap after it */
+.jr-sales-details {
+    margin: 4px 12px 14px 36px;
+    padding: 10px 12px;
+    background: #FFF5FA;
+    border-left: 4px solid var(--jr-primary);
+    border-radius: 12px;
+    display: flex; flex-direction: column; gap: 8px;
+}
+.jr-sales-details-note { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.jr-sales-details-note .jr-badge-senior { margin-left: 0; }
+
+/* Items sub-table: its header is small, muted and uppercase, so it does not look like the main header */
+.jr-sales-items { table-layout: fixed; width: 100%; --bs-table-bg: transparent; }
+.jr-sales-items > thead th {
+    background: transparent;
+    color: var(--jr-muted);
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.8px;
+    padding: 4px 10px;
+    border-bottom: 1px solid var(--jr-border-soft);
+}
+.jr-sales-items > tbody td { padding: 4px 10px; font-size: 15px; vertical-align: middle; }
+.jr-sales-items > tbody > tr:last-child > td { border-bottom: 0; }
+.jr-col-qty      { width: 60px; }
+.jr-col-price    { width: 100px; }
+.jr-col-pct      { width: 90px; }
+.jr-col-amount   { width: 110px; }
+.jr-col-istatus  { width: 100px; }
+.jr-col-iaction  { width: 110px; }
+
+/* "Original ₱X · Refunded ₱Y · Final ₱Z" at the end of the panel */
+.jr-sales-money-line { text-align: right; font-size: 14px; color: var(--jr-muted); padding: 2px 10px 0; }
+.jr-sales-money-line strong { color: var(--jr-text); }
+
+/* Card comparison with the day before: green up, red down, grey "—" when there is nothing to compare */
+.jr-sales-change { font-size: 13px; font-weight: 700; }
+.jr-sales-change.is-up   { color: var(--jr-ok-text); }
+.jr-sales-change.is-down { color: var(--jr-error); }
+.jr-sales-change.is-none { color: var(--jr-muted); }
+
+/* Search and filters above the table */
+.jr-sales-filters {
+    display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px;
+    margin: 0;
+    padding: 14px 16px;
+    background: var(--jr-panel);
+    border: 2px solid var(--jr-border);
+    border-radius: 20px;
+}
+.jr-sales-filter { display: flex; flex-direction: column; gap: 6px; flex: 1 1 150px; min-width: 0; }
+.jr-sales-filter-q { flex: 1.3 1 170px; }
+.jr-sales-filter-buttons { display: flex; gap: 8px; }
+
+/* Empty state: no sale on that day (or none matching the filters) */
+.jr-sales-empty {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    padding: 40px 16px;
+    text-align: center;
+    background: var(--jr-panel);
+    border: 2px dashed var(--jr-border);
+    border-radius: 20px;
+    color: var(--jr-muted);
+}
+.jr-sales-empty > svg { color: var(--jr-primary); }
+.jr-sales-empty > strong { font-family: var(--jr-font-head); font-size: 20px; color: var(--jr-text); }
+
+/* Receipt / Void inside an open sale: only on phones (the Actions column is hidden there) */
+.jr-sales-phone-actions { display: none; }
+
+/* Phone (below 600px): each sale is a card (receipt no, time, total, status); tap it to open its items.
+   The table elements become blocks; the cells that do not fit (cashier, qty, discount, actions) are hidden. */
+@media (max-width: 599.98px) {
+    .jr-sales-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .jr-sales-filter, .jr-sales-filter-q { flex-basis: 100%; }
+
+    .jr-sales-table-wrap { overflow: visible; background: transparent; border: 0; border-radius: 0; }
+    .jr-sales-table { min-width: 0; }
+    .jr-sales-table > colgroup,
+    .jr-sales-table > thead { display: none; }
+    .jr-sales-table,
+    .jr-sales-table > tbody,
+    .jr-sales-table > tbody > tr,
+    .jr-sales-table > tbody > tr > td { display: block; width: 100%; }
+
+    /* One card per sale */
+    .jr-sales-table > .jr-sales-group {
+        margin-bottom: 12px;
+        background: var(--jr-panel);
+        border: 2px solid var(--jr-border);
+        border-radius: 16px;
+        overflow: hidden;
+    }
+    .jr-sales-table > .jr-sales-group > .jr-sales-sale-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas: "receipt total" "time status";
+        align-items: center;
+        gap: 2px 12px;
+        padding: 8px 14px 10px 8px;
+    }
+    .jr-sales-table > tbody > .jr-sales-sale-row > td { padding: 0; border: 0; background: transparent !important; }
+    .jr-sales-sale-row > td:nth-child(1) { grid-area: receipt; }
+    .jr-sales-sale-row > td:nth-child(2) { grid-area: time; padding-left: 36px; color: var(--jr-muted); }
+    .jr-sales-sale-row > td:nth-child(6) { grid-area: total; }
+    .jr-sales-sale-row > td:nth-child(7) { grid-area: status; }
+    .jr-sales-sale-row > td:nth-child(7) .jr-sales-status { justify-content: flex-end; }
+    .jr-sales-sale-row > td:nth-child(3),
+    .jr-sales-sale-row > td:nth-child(4),
+    .jr-sales-sale-row > td:nth-child(5),
+    .jr-sales-sale-row > td:nth-child(8) { display: none; }
+    /* The card's colors (instead of the row zebra / open colors on the cells) */
+    .jr-sales-table > .jr-sales-group.is-open > .jr-sales-sale-row { background: var(--jr-fill); }
+    .jr-sales-table > .jr-sales-group.jr-sales-voided > .jr-sales-sale-row { background: #EFE8EC; }
+
+    /* Items: one small block per item: name, then Qty / Price / Disc. / Amount / Status in a row */
+    .jr-sales-table > tbody > .jr-sales-details-row > td { border: 0; }
+    .jr-sales-details { margin: 0 8px 10px; }
+    .jr-sales-items > thead,
+    .jr-sales-items > colgroup { display: none; }
+    .jr-sales-items,
+    .jr-sales-items > tbody { display: block; }
+    .jr-sales-items > tbody > tr {
+        display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--jr-border-soft);
+    }
+    .jr-sales-items > tbody > tr > td { display: block; padding: 0; border: 0; text-align: left; }
+    .jr-sales-items > tbody > tr > td:first-child { flex-basis: 100%; }
+    .jr-sales-items > tbody > tr > td:last-child { margin-left: auto; }
+    .jr-sales-items td[data-label]::before {
+        content: attr(data-label) " ";
+        font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--jr-muted);
+    }
+    .jr-sales-phone-actions { display: flex; gap: 10px; }
+    .jr-sales-phone-actions .jr-btn-void-sm { width: auto; flex: 0 0 auto; padding: 0 14px; }
+    .jr-sales-money-line { text-align: left; padding: 0; }
+}
 .jr-btn-void {
     --bs-btn-bg: var(--jr-panel);
     --bs-btn-border-color: var(--jr-danger);
@@ -944,9 +1219,10 @@ h1, h2, h3, h4, h5, h6, .btn {
 .jr-btn-void.jr-btn-void-on:hover,
 .jr-btn-void.jr-btn-void-on:active { background: var(--jr-danger); color: #FFFFFF; border-color: var(--jr-danger); }
 
-/* Table + summary on the left, void card on the right; the card goes under the table below 992px */
+/* Table on the left, void card on the right. The table needs about 960px, so on narrower screens
+   (tablets, 1024-1280px) the card goes under the table instead of squeezing it (the page scrolls to the card). */
 .jr-sales-layout { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
-.jr-sales-main { flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
+.jr-sales-main { flex: 999 1 960px; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
 
 /* Void card (mockup: docs/design/07-sales-records-void.png, right part) */
 .jr-void-card {
@@ -1014,24 +1290,9 @@ h1, h2, h3, h4, h5, h6, .btn {
 .jr-receipt-row-voided { color: #8C7A85; }
 .jr-receipt-row-voided > span:last-child { text-decoration: line-through; }
 
-/* Daily summary under the table (right side, like the mockup's Total sales box) */
+/* Page links (20 sales per page) */
 .jr-sales-pages .pagination { margin: 0; justify-content: flex-end; }
 .jr-sales-pages .page-link { min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
-.jr-sales-summary {
-    align-self: flex-end;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 12px 28px;
-    background: var(--jr-fill);
-    border-radius: 16px;
-    padding: 12px 20px;
-    color: #5C1B43;
-    font-size: 15px;
-    font-weight: 700;
-}
-.jr-sales-summary strong { font-size: 20px; margin-left: 4px; color: var(--jr-text); }
-.jr-sales-total { font-family: var(--jr-font-head); font-weight: 700; font-size: 26px; color: var(--jr-primary); margin-left: 8px; }
 
 /* Close Sales box */
 .jr-sales-close-date { color: var(--jr-muted); font-weight: 700; margin-top: -12px; }

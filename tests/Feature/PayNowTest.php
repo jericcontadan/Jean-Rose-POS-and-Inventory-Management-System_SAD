@@ -170,9 +170,11 @@ class PayNowTest extends TestCase
             ->assertSee($sale->receiptNumber())
             ->assertSee($sale->sale_datetime->format('m/d/Y H:i'))
             ->assertSee($this->cashier->username)
-            ->assertSee('Test Serum x1 (-10%)')
+            ->assertSee('Test Serum (-10%)')
+            ->assertSee('1 x 120.00')
             ->assertSee('108.00')
-            ->assertSee('Test Makeup x3')
+            ->assertSee('Test Makeup')
+            ->assertSee('3 x 150.00')
             ->assertSee('450.00')
             ->assertSeeInOrder(['Subtotal', '570.00', 'Near-expiry discount', '-12.00', 'TOTAL', '558.00', 'Cash', '600.00', 'Change', '42.00'])
             ->assertSee('Thank you!')
@@ -384,7 +386,7 @@ class PayNowTest extends TestCase
         $this->assertSame(2, InventoryHistory::whereIn('batch_id', $items->pluck('batch_id'))->where('transaction_type', 'SALE')->count());
 
         // The receipt joins the two rows into one line.
-        $this->get(route('receipts.show', $sale))->assertSee('Test Toner x5')->assertSee('500.00');
+        $this->get(route('receipts.show', $sale))->assertSee('Test Toner')->assertSee('5 x 100.00')->assertSee('500.00');
     }
 
     // ---------- who may open a receipt ----------

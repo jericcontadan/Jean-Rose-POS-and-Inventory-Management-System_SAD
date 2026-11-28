@@ -314,16 +314,84 @@ class SaleService
             ->implode(', ');
     }
 
-    // The sales of one day (by sale_datetime), oldest first, 50 sales per page.
+    // The sales of one day (by sale_datetime), oldest first, 20 sales per page.
     // Paginated by SALE, not by item row, so one receipt is never split over two pages.
-    public function salesForDate(CarbonInterface $date, int $perPage = 50): LengthAwarePaginator
+    // Optional $filters (all from the filter bar above the table):
+    //   q        receipt number: "S-0012", "s12" or "12" -> sale_id 12
+    //   status   PAID, CANCELLED or VOIDED_ITEMS (a sale with at least one voided item)
+    //   discount SENIOR, PWD, NEAR_EXPIRY (an item with a near-expiry %) or NONE (no discount at all)
+    //   cashier  user_id of the cashier who made the sale
+    public function salesForDate(CarbonInterface $date, array $filters = [], int $perPage = 20): LengthAwarePaginator
     {
-        return Sale::with(['cashier', 'items.batch.product.category'])
-            ->whereBetween('sale_datetime', $this->dayRange($date))
-            ->orderBy('sale_datetime')
+        $query = Sale::with(['cashier', 'voidedBy', 'items.batch.product.category', 'items.voidedBy'])
+            ->whereBetween('sale_datetime', $this->dayRange($date));
+
+        if (! empty($filters['q'])) {
+            // Keep only the digits: "S-0012" -> 12. No digits at all -> nothing matches.
+            $id = (int) preg_replace('/\D/', '', $filters['q']);
+            $query->where('sale_id', $id);
+        }
+
+        match ($filters['status'] ?? null) {
+            'PAID' => $query->where('sale_status', 'PAID'),
+            'CANCELLED' => $query->where('sale_status', 'CANCELLED'),
+            'VOIDED_ITEMS' => $query->whereHas('items', fn ($q) => $q->where('item_status', 'VOIDED')),
+            default => null,
+        };
+
+        match ($filters['discount'] ?? null) {
+            'SENIOR', 'PWD' => $query->where('discount_type', $filters['discount']),
+            'NEAR_EXPIRY' => $query->whereHas('items', fn ($q) => $q->where('discount_percent', '>', 0)),
+            'NONE' => $query->where('discount_type', 'NONE')
+                ->whereDoesntHave('items', fn ($q) => $q->where('discount_percent', '>', 0)),
+            default => null,
+        };
+
+        if (! empty($filters['cashier'])) {
+            $query->where('user_id', (int) $filters['cashier']);
+        }
+
+        return $query->orderBy('sale_datetime')
             ->orderBy('sale_id')
             ->paginate($perPage)
             ->withQueryString(); // keep ?date= on the page links
+    }
+
+    // The cashiers who made a sale on that day (for the Cashier filter), by username.
+    public function cashiersForDate(CarbonInterface $date): Collection
+    {
+        return UserAccount::whereIn('user_id', Sale::whereBetween('sale_datetime', $this->dayRange($date))->select('user_id'))
+            ->orderBy('username')
+            ->get(['user_id', 'username']);
+    }
+
+    // What the customer paid at Pay Now (before any item was voided): cash received minus change.
+    // Very old sales without cash saved: today's total plus the voided lines.
+    public function originalTotal(Sale $sale): float
+    {
+        if ($sale->cash_received === null) {
+            $voided = $sale->items->filter(fn (SaleItem $item) => $item->isVoided());
+
+            return round((float) $sale->total_amount + $voided->sum(fn (SaleItem $item) => (float) $item->line_amount), 2);
+        }
+
+        return round((float) $sale->cash_received - (float) $sale->change_amount, 2);
+    }
+
+    // Money given back for voided ITEMS of this sale, or null when no item was voided.
+    // The sale total went down by this amount (voidItem() recalculates it). Used by the receipt and Sales Records.
+    public function itemRefund(Sale $sale): ?float
+    {
+        $voided = $sale->items->filter(fn (SaleItem $item) => $item->isVoided());
+        if ($voided->isEmpty()) {
+            return null;
+        }
+
+        if ($sale->cash_received === null) {
+            return round($voided->sum(fn (SaleItem $item) => (float) $item->line_amount), 2);
+        }
+
+        return round($this->originalTotal($sale) - (float) $sale->total_amount, 2);
     }
 
     // Excel export (Sales report): every sale from the start of $from to the end of $to, oldest first, NOT paginated.
@@ -350,6 +418,12 @@ class SaleService
             'total_sales' => round((float) (clone $paid)->sum('total_amount'), 2),
             // Money taken off by near-expiry and Senior/PWD discounts: subtotal (full price) minus total paid.
             'total_discount' => round((float) (clone $paid)->sum(DB::raw('subtotal - total_amount')), 2),
+            // Money given back for voided ITEMS of this day's sales (whole-sale voids are the "Cancelled" count).
+            'refunded' => round((float) (clone $day)
+                ->whereHas('items', fn ($q) => $q->where('item_status', 'VOIDED'))
+                ->with('items')
+                ->get()
+                ->sum(fn (Sale $sale) => $this->itemRefund($sale)), 2),
         ];
     }
 

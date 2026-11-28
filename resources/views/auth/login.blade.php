@@ -25,6 +25,11 @@
                 <div class="alert alert-success mb-0" role="status">{{ session('success') }}</div>
             @endif
 
+            {{-- Red message when the session expired (419, see bootstrap/app.php). --}}
+            @if (session('error'))
+                <div class="alert alert-danger mb-0" role="alert">{{ session('error') }}</div>
+            @endif
+
             {{-- One error box for all login errors (wrong login, inactive, too many tries, empty fields). --}}
             @if ($errors->any())
                 <div class="alert alert-danger mb-0" role="alert">{{ $errors->first() }}</div>

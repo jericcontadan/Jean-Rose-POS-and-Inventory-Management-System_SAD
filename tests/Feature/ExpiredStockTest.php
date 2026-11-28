@@ -255,7 +255,8 @@ class ExpiredStockTest extends TestCase
         $this->actingAs($this->owner);
 
         $this->get(route('receipts.show', $sale))->assertOk()
-            ->assertSee('Test Rose Serum x2')
+            ->assertSee('Test Rose Serum')
+            ->assertSee('2 x 120.00')
             ->assertDontSee('Test Renamed Serum');
         $this->get(route('sales.index', ['date' => $sale->sale_datetime->format('Y-m-d')]))->assertOk()
             ->assertSee('Test Rose Serum')

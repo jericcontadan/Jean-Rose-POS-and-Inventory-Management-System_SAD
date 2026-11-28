@@ -356,7 +356,8 @@ class VoidTest extends TestCase
             ->assertSee("Sale {$sale->receiptNumber()} was voided.")
             ->assertSee('jr-sales-voided', false)
             ->assertSee('VOIDED')
-            ->assertSee('Reason: wrong item entered');
+            ->assertSee('Sale voided by '.$this->owner->username.' at ')
+            ->assertSee('· wrong item entered');
 
         // The day's totals leave the voided sale out.
         $date = $sale->sale_datetime->copy()->startOfDay();

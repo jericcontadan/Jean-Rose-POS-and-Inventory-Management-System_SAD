@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Services\DiscountService;
+use App\Services\SaleService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
@@ -12,7 +13,7 @@ use Illuminate\View\View;
 class ReceiptController extends Controller
 {
     // GET /receipts/{sale}
-    public function show(Sale $sale, DiscountService $discounts): View
+    public function show(Sale $sale, DiscountService $discounts, SaleService $sales): View
     {
         // Owner: any receipt. Cashier: only their own sales (Gate in AppServiceProvider). Others get 403.
         Gate::authorize('view-receipt', $sale);
@@ -25,10 +26,13 @@ class ReceiptController extends Controller
         $lines = $sale->items
             ->groupBy(fn (SaleItem $item) => $item->batch->product_id.'|'.$item->discount_percent.'|'.$item->item_status)
             ->map(fn ($items) => [
-                // "Serum x1 (-10%)" or "Makeup x3" (the product name saved at the time of sale)
-                'label' => $items->first()->displayName().' x'.$items->sum('quantity')
+                // "Serum (-10%)" or "Makeup (VOIDED)" (the product name saved at the time of sale)
+                'name' => $items->first()->displayName()
                     .$this->discountText((float) $items->first()->discount_percent)
                     .($items->first()->isVoided() ? ' (VOIDED)' : ''),
+                // Printed as "2 x 150.00": the price when it was sold (same for every batch of the product)
+                'quantity' => (int) $items->sum('quantity'),
+                'unit_price' => (float) $items->first()->unit_price,
                 'amount' => round($items->sum(fn (SaleItem $item) => (float) $item->line_amount), 2),
                 'voided' => $items->first()->isVoided(),
             ])
@@ -40,25 +44,9 @@ class ReceiptController extends Controller
             // Near-expiry discount only. The Senior / PWD discount (sale.discount_amount) is its own line on the receipt.
             'discount' => round((float) $sale->subtotal - (float) $sale->total_amount - (float) $sale->discount_amount, 2),
             'seniorLabel' => $discounts->label($sale->discount_type),
-            'refunded' => $this->refunded($sale),
+            // Money given back for voided items, or null when no item was voided (no "Refunded" line).
+            'refunded' => $sales->itemRefund($sale),
         ]);
-    }
-
-    // Money given back for voided items, or null when no item was voided (no "Refunded" line on the receipt).
-    // What the customer first paid is cash_received - change_amount; the sale total is now lower by the refund.
-    private function refunded(Sale $sale): ?float
-    {
-        $voided = $sale->items->filter(fn (SaleItem $item) => $item->isVoided());
-        if ($voided->isEmpty()) {
-            return null;
-        }
-
-        if ($sale->cash_received === null) {
-            // Very old sale without cash saved: add up the voided lines instead.
-            return round($voided->sum(fn (SaleItem $item) => (float) $item->line_amount), 2);
-        }
-
-        return round((float) $sale->cash_received - (float) $sale->change_amount - (float) $sale->total_amount, 2);
     }
 
     // 10.00 -> " (-10%)", 0 -> "" (no discount on that line)

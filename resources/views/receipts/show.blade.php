@@ -1,6 +1,7 @@
 {{--
     Receipt (screen 4). Mockup: docs/design/04-payment-receipt.png (right side).
-    Needs $sale, $lines (from ReceiptController), $discount and $refunded (null when no item was voided). Only the receipt card is printed (see @media print in jeanrose.css).
+    Compact like an 80mm thermal receipt, no pictures.
+    Needs $sale, $lines (name, quantity, unit_price, amount, voided from ReceiptController), $discount and $refunded (null when no item was voided). Only the receipt card is printed (see @media print in jeanrose.css).
 --}}
 @extends('layouts.app')
 
@@ -32,7 +33,12 @@
             <div class="jr-receipt-block">
                 @foreach ($lines as $line)
                     {{-- A voided item is printed grey and struck through; it is not in the totals below. --}}
-                    <div class="jr-receipt-row {{ $line['voided'] ? 'jr-receipt-row-voided' : '' }}"><span>{{ $line['label'] }}</span><span>{{ number_format($line['amount'], 2) }}</span></div>
+                    {{-- One line per item: name | qty x price | amount --}}
+                    <div class="jr-receipt-item {{ $line['voided'] ? 'jr-receipt-row-voided' : '' }}">
+                        <span>{{ $line['name'] }}</span>
+                        <span>{{ $line['quantity'] }} x {{ number_format($line['unit_price'], 2) }}</span>
+                        <span>{{ number_format($line['amount'], 2) }}</span>
+                    </div>
                 @endforeach
             </div>
 

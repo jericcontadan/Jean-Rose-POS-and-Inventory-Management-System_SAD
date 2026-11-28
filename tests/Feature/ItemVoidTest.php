@@ -223,7 +223,10 @@ class ItemVoidTest extends TestCase
         $this->get(route('sales.index', ['date' => $date, 'open' => $sale->sale_id]))
             ->assertOk()
             ->assertSee('jr-item-voided', false)
-            ->assertSee('Reason: item entered twice')
+            ->assertSee('Voided by '.$this->owner->username.' at ')
+            ->assertSee('· item entered twice')
+            ->assertSee('1 item voided')
+            ->assertSee('Original ₱558.00 · Refunded ₱450.00 · Final')
             ->assertDontSee('id="voidItemForm"', false);
 
         // A voided item cannot be opened in the card again.
@@ -238,7 +241,8 @@ class ItemVoidTest extends TestCase
 
         $this->get(route('receipts.show', $sale))
             ->assertOk()
-            ->assertSee('Test Makeup x3 (VOIDED)')
+            ->assertSee('Test Makeup (VOIDED)')
+            ->assertSee('3 x 150.00')
             ->assertSee('jr-receipt-row-voided', false)
             // Paid 558.00 at first; the makeup (450.00) was voided, so the new total is 108.00.
             ->assertSeeInOrder(['NEW TOTAL', '108.00', 'Refunded (voided items)', '450.00', 'Cash']);
