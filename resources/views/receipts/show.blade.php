@@ -38,7 +38,15 @@
 
             <div class="jr-receipt-block">
                 <div class="jr-receipt-row"><span>Subtotal</span><span>{{ number_format($sale->subtotal, 2) }}</span></div>
-                <div class="jr-receipt-row"><span>Discount</span><span>{{ $discount > 0 ? '-' : '' }}{{ number_format($discount, 2) }}</span></div>
+                {{-- Near-expiry discount: only printed when there is one (no "0.00" line). --}}
+                @if ($discount > 0)
+                    <div class="jr-receipt-row"><span>Near-expiry discount</span><span>-{{ number_format($discount, 2) }}</span></div>
+                @endif
+                @if ($sale->hasSeniorDiscount())
+                    {{-- Senior Citizen / PWD: never on the same item as a near-expiry discount (the higher one was used). --}}
+                    <div class="jr-receipt-row"><span>{{ $seniorLabel }} discount (ID {{ $sale->discount_id_number }})</span><span>{{ (float) $sale->discount_amount > 0 ? '-' : '' }}{{ number_format($sale->discount_amount, 2) }}</span></div>
+                    <div class="jr-receipt-row"><span>Customer</span><span>{{ $sale->discount_customer_name }}</span></div>
+                @endif
                 @if ($refunded === null)
                     <div class="jr-receipt-row jr-receipt-total"><span>TOTAL</span><span>{{ number_format($sale->total_amount, 2) }}</span></div>
                 @else

@@ -34,7 +34,7 @@ class PaymentController extends Controller
         }
 
         try {
-            $sale = $this->sales->pay($request->user(), $this->cart->items(), (float) $request->validated('cash_received'));
+            $sale = $this->sales->pay($request->user(), $this->cart->items(), (float) $request->validated('cash_received'), $request->discount());
         } catch (PaymentException $e) {
             // Something the cashier can fix: nothing was saved, the cart is kept, the payment box opens again.
             return redirect()->route('pos.index')->withInput()->with('error', $e->getMessage())->with('reopen_payment', true);

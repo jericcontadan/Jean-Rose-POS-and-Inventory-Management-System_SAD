@@ -25,6 +25,7 @@ class SaleService
         private StockStatusService $status,
         private InventoryService $inventory,
         private AuditService $audit,
+        private DiscountService $discounts,
     ) {
     }
 
@@ -33,21 +34,27 @@ class SaleService
      *
      * $cart: [product_id => quantity] from the session (CartService::items()).
      * $cash: cash received from the customer.
+     * $discount: Senior Citizen / PWD choice from PayRequest::discount(): ['type', 'id_number', 'customer_name'].
+     *            Empty (or type NONE) = no Senior/PWD discount.
      */
-    public function pay(UserAccount $user, array $cart, float $cash): Sale
+    public function pay(UserAccount $user, array $cart, float $cash, array $discount = []): Sale
     {
         if (empty($cart)) {
             throw new PaymentException('The order is empty.');
         }
 
-        return DB::transaction(function () use ($user, $cart, $cash) {
+        $type = $discount['type'] ?? 'NONE';
+        $isSenior = $type !== 'NONE';
+
+        return DB::transaction(function () use ($user, $cart, $cash, $discount, $type, $isSenior) {
             // 1. Read the products and LOCK their stock rows, so no other sale can change them until we finish.
             $products = $this->loadAndLock(array_keys($cart));
 
             // 2. Pick the batches (FEFO) and price every part on the server.
             $parts = [];
             $subtotal = 0.0;
-            $total = 0.0;
+            $lines = 0.0;          // sum of line_amount
+            $seniorAmount = 0.0;   // sale.discount_amount (Senior / PWD)
 
             foreach ($cart as $productId => $quantity) {
                 $product = $products->get($productId);
@@ -65,19 +72,23 @@ class SaleService
                 }
 
                 $unitPrice = (float) $product->unit_price;
+                $senior = $isSenior && $this->discounts->qualifies($product);
 
                 foreach ($this->picker->pick($product, $quantity) as $part) {
-                    $percent = $this->status->discountPercentFor($part['batch']->expiry_date);
-                    $lineAmount = round($part['quantity'] * $unitPrice * (1 - $percent / 100), 2);
+                    // Near-expiry OR Senior/PWD, whichever is higher, never both (DiscountService::pricePart()).
+                    $nearPercent = $this->status->discountPercentFor($part['batch']->expiry_date);
+                    $price = $this->discounts->pricePart($part['quantity'], $unitPrice, $nearPercent, $senior);
 
-                    $parts[] = $part + ['product' => $product, 'unit_price' => $unitPrice, 'percent' => $percent, 'line_amount' => $lineAmount];
+                    $parts[] = $part + ['product' => $product, 'unit_price' => $unitPrice, 'percent' => $price['percent'], 'line_amount' => $price['line_amount']];
                     $subtotal += $part['quantity'] * $unitPrice;
-                    $total += $lineAmount;
+                    $lines += $price['line_amount'];
+                    $seniorAmount += $price['senior_amount'];
                 }
             }
 
             $subtotal = round($subtotal, 2);
-            $total = round($total, 2);
+            $seniorAmount = round($seniorAmount, 2);
+            $total = round($lines - $seniorAmount, 2);
             $cash = round($cash, 2);
 
             // 3. Cash must cover the total (compare in centavos so decimals do not cause surprises).
@@ -93,6 +104,10 @@ class SaleService
                 'subtotal' => $subtotal,
                 'total_amount' => $total,
                 'discount_percent' => 0, // the sale-level discount is not used
+                'discount_type' => $type,
+                'discount_id_number' => $isSenior ? $discount['id_number'] : null,
+                'discount_customer_name' => $isSenior ? $discount['customer_name'] : null,
+                'discount_amount' => $seniorAmount,
                 'sale_status' => 'PAID',
                 'cash_received' => $cash,
                 'change_amount' => $change,
@@ -118,16 +133,14 @@ class SaleService
                 $this->inventory->removeForSale($part['batch']->inventory, $part['quantity'], $user);
             }
 
-            // 7. Audit row.
-            $this->audit->log(
-                $user,
-                'SALE',
-                'SALES',
-                $sale->receiptNumber(),
-                sprintf('Items %d, total %s, cash %s, change %s',
-                    count($cart), number_format($total, 2, '.', ''), number_format($cash, 2, '.', ''), number_format($change, 2, '.', '')),
-                $sale->sale_id,
-            );
+            // 7. Audit row. A Senior/PWD sale also names the discount, the ID number and the customer (details holds 255 characters).
+            $details = sprintf('Items %d, total %s, cash %s, change %s',
+                count($cart), number_format($total, 2, '.', ''), number_format($cash, 2, '.', ''), number_format($change, 2, '.', ''));
+            if ($isSenior) {
+                $details .= sprintf(', %s discount %s, ID %s, name %s',
+                    $this->discounts->label($type), number_format($seniorAmount, 2, '.', ''), $discount['id_number'], $discount['customer_name']);
+            }
+            $this->audit->log($user, 'SALE', 'SALES', $sale->receiptNumber(), Str::limit($details, 252), $sale->sale_id);
 
             return $sale;
         });
@@ -221,7 +234,7 @@ class SaleService
             $this->inventory->returnForVoid($stock, (int) $item->quantity, $owner);
 
             // 4. Work out the totals again from the items that are still SOLD.
-            $sold = $sale->items()->where('item_status', 'SOLD')->get();
+            $sold = $sale->items()->with('batch.product')->where('item_status', 'SOLD')->get();
             $this->recalculate($sale, $sold);
 
             // 5. No SOLD item left: the whole sale is cancelled.
@@ -247,17 +260,13 @@ class SaleService
     }
 
     // New subtotal, discount_amount and total_amount from the SOLD items (the sale is saved by the caller).
-    // discount_amount (Senior / PWD) keeps the same share of the lines: 0 when the sale has no Senior / PWD discount.
+    // discount_amount (Senior / PWD) is worked out again with the same rule as Pay Now, from the items still SOLD;
+    // it is 0 when the sale has no Senior / PWD discount.
     private function recalculate(Sale $sale, Collection $sold): void
     {
-        $oldLines = (float) $sale->total_amount + (float) $sale->discount_amount;
         $subtotal = round($sold->sum(fn (SaleItem $i) => $i->quantity * (float) $i->unit_price), 2);
         $lines = round($sold->sum(fn (SaleItem $i) => (float) $i->line_amount), 2);
-
-        $discount = 0.0;
-        if ($sale->discount_type !== null && $sale->discount_type !== 'NONE' && $oldLines > 0) {
-            $discount = round((float) $sale->discount_amount * $lines / $oldLines, 2);
-        }
+        $discount = $sale->hasSeniorDiscount() ? $this->discounts->seniorAmountFor($sold) : 0.0;
 
         $sale->subtotal = $subtotal;
         $sale->discount_amount = $discount;
@@ -339,7 +348,7 @@ class SaleService
             'paid_count' => (clone $paid)->count(),
             'cancelled_count' => (clone $day)->where('sale_status', 'CANCELLED')->count(),
             'total_sales' => round((float) (clone $paid)->sum('total_amount'), 2),
-            // Money taken off by near-expiry discounts: subtotal (full price) minus total paid.
+            // Money taken off by near-expiry and Senior/PWD discounts: subtotal (full price) minus total paid.
             'total_discount' => round((float) (clone $paid)->sum(DB::raw('subtotal - total_amount')), 2),
         ];
     }

@@ -20,6 +20,7 @@ class CartService
     public function __construct(
         private BatchPickerService $picker,
         private StockStatusService $status,
+        private DiscountService $discounts,
     ) {
     }
 
@@ -83,6 +84,8 @@ class CartService
      *   discount_percent = NEAR_EXPIRY_DISCOUNT_PERCENT if that batch is near expiry, else 0
      *   line_amount      = quantity * unit_price * (1 - discount_percent / 100), rounded to 2 decimals
      * subtotal = sum(quantity * unit_price), total = sum(line_amount).
+     * senior_total / senior_discount: what the total and the Senior/PWD discount WOULD be if the cashier chooses
+     * Senior Citizen or PWD in the payment box (same rule as SaleService::pay(); shown only, never trusted on pay).
      */
     public function summary(): array
     {
@@ -94,6 +97,8 @@ class CartService
         $notices = [];
         $subtotal = 0.0;
         $total = 0.0;
+        $seniorLines = 0.0;
+        $seniorDiscount = 0.0;
 
         foreach ($cart as $productId => $quantity) {
             $product = $products->get($productId);
@@ -115,10 +120,16 @@ class CartService
             $lineTotal = 0.0;
             $nearQuantity = 0;
             $percent = 0.0;
+            $qualifies = $this->discounts->qualifies($product);
 
             foreach ($this->picker->pick($product, $quantity) as $part) {
                 $partPercent = $this->status->discountPercentFor($part['batch']->expiry_date);
                 $lineTotal += round($part['quantity'] * $unitPrice * (1 - $partPercent / 100), 2);
+
+                // The same part priced as a Senior/PWD sale (higher discount wins, never both).
+                $seniorPrice = $this->discounts->pricePart($part['quantity'], $unitPrice, $partPercent, $qualifies);
+                $seniorLines += $seniorPrice['line_amount'];
+                $seniorDiscount += $seniorPrice['senior_amount'];
 
                 if ($partPercent > 0) {
                     $nearQuantity += $part['quantity'];
@@ -159,6 +170,8 @@ class CartService
             'subtotal' => round($subtotal, 2),
             'discount_total' => round($subtotal - $total, 2),
             'total' => round($total, 2),
+            'senior_discount' => round($seniorDiscount, 2),
+            'senior_total' => round(round($seniorLines, 2) - round($seniorDiscount, 2), 2),
         ];
     }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Sale;
 use App\Models\SaleItem;
+use App\Services\DiscountService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
@@ -11,7 +12,7 @@ use Illuminate\View\View;
 class ReceiptController extends Controller
 {
     // GET /receipts/{sale}
-    public function show(Sale $sale): View
+    public function show(Sale $sale, DiscountService $discounts): View
     {
         // Owner: any receipt. Cashier: only their own sales (Gate in AppServiceProvider). Others get 403.
         Gate::authorize('view-receipt', $sale);
@@ -36,7 +37,9 @@ class ReceiptController extends Controller
         return view('receipts.show', [
             'sale' => $sale,
             'lines' => $lines,
-            'discount' => round((float) $sale->subtotal - (float) $sale->total_amount, 2),
+            // Near-expiry discount only. The Senior / PWD discount (sale.discount_amount) is its own line on the receipt.
+            'discount' => round((float) $sale->subtotal - (float) $sale->total_amount - (float) $sale->discount_amount, 2),
+            'seniorLabel' => $discounts->label($sale->discount_type),
             'refunded' => $this->refunded($sale),
         ]);
     }

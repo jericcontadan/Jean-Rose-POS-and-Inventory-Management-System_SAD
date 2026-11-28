@@ -22,6 +22,7 @@ class Sale extends Model
             'subtotal' => 'decimal:2',
             'total_amount' => 'decimal:2',
             'discount_percent' => 'decimal:2',
+            'discount_amount' => 'decimal:2',
             'cash_received' => 'decimal:2',
             'change_amount' => 'decimal:2',
             'voided_at' => 'datetime',
@@ -32,6 +33,12 @@ class Sale extends Model
     public function receiptNumber(): string
     {
         return 'S-'.str_pad((string) $this->sale_id, 4, '0', STR_PAD_LEFT);
+    }
+
+    // true when the sale has a Senior Citizen or PWD discount (discount_type SENIOR or PWD).
+    public function hasSeniorDiscount(): bool
+    {
+        return in_array($this->discount_type, ['SENIOR', 'PWD'], true);
     }
 
     // The cashier (or owner) who made the sale.

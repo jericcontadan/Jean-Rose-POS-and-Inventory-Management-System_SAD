@@ -90,6 +90,10 @@
                                 @else
                                     <span class="jr-sales-meta">· Total {{ $peso($sale->total_amount) }}</span>
                                 @endif
+                                @if ($sale->hasSeniorDiscount())
+                                    {{-- Senior Citizen / PWD discount saved on the sale --}}
+                                    <span class="jr-badge-senior">{{ $sale->discount_type === 'SENIOR' ? 'Senior Citizen' : 'PWD' }} · ID {{ $sale->discount_id_number }} · {{ $sale->discount_customer_name }} · -{{ $peso($sale->discount_amount) }}</span>
+                                @endif
                             </td>
                             <td>
                                 <div class="jr-sales-actions">
