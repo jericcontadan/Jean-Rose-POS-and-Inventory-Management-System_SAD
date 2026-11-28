@@ -724,6 +724,28 @@ h1, h2, h3, h4, h5, h6, .btn {
 .jr-quick-btn.active,
 .jr-quick-btn:active { border-color: var(--jr-primary); background: var(--jr-fill); }
 .jr-pay-hint { margin: 8px 0 0; font-size: 14px; color: var(--jr-muted); }
+
+/* Senior Citizen / PWD discount in the payment box: same pill buttons as the quick cash buttons */
+.jr-pay-senior-note { font-size: 14px; font-weight: 700; color: var(--jr-primary); }
+.jr-discount-options { display: flex; flex-wrap: wrap; gap: 10px; }
+.jr-discount-btn { display: inline-flex; align-items: center; cursor: pointer; margin: 0; }
+.btn-check:checked + .jr-discount-btn { border-color: var(--jr-primary); background: var(--jr-fill); color: var(--jr-primary); }
+.btn-check:focus-visible + .jr-discount-btn { outline: 3px solid var(--jr-primary); outline-offset: 2px; }
+.jr-discount-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.jr-discount-fields[hidden] { display: none; }
+.jr-discount-input { min-height: 48px; border-radius: 14px; }
+
+/* Sales Records: Senior / PWD pill on the sale row */
+.jr-badge-senior {
+    display: inline-block;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 4px 12px;
+    margin-left: 6px;
+    background: var(--jr-fill);
+    color: var(--jr-primary);
+}
 .jr-change-box {
     background: var(--jr-ok-bg);
     color: var(--jr-ok-text);

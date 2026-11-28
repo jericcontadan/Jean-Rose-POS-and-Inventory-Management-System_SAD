@@ -1,11 +1,16 @@
 {{--
     Payment box (screen 4). Mockup: docs/design/04-payment-receipt.png (left card).
     Needs $order (CartService::summary()) and $payToken.
-    The total shown here is only for the cashier. The form sends ONLY the method, the cash and the one-time token;
-    the server works out the total again (SaleService::pay()) and checks cash >= total itself.
+    The total shown here is only for the cashier. The form sends ONLY the method, the cash, the discount choice
+    (None / Senior Citizen / PWD with ID number and name) and the one-time token;
+    the server works out the total and the discount again (SaleService::pay()) and checks cash >= total itself.
 --}}
+@php
+    $discountType = old('discount_type', 'NONE');
+    $payErrors = $errors->hasAny(['cash_received', 'discount_type', 'discount_id_number', 'discount_customer_name']);
+@endphp
 <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentTitle" aria-hidden="true"
-     data-reopen="{{ session('reopen_payment') || $errors->has('cash_received') ? '1' : '0' }}">
+     data-reopen="{{ session('reopen_payment') || $payErrors ? '1' : '0' }}">
     <div class="modal-dialog modal-dialog-centered jr-pay-dialog">
         <form method="POST" action="{{ route('pos.pay') }}" class="modal-content jr-modal jr-pay-card" id="paymentForm">
             @csrf
@@ -15,10 +20,53 @@
 
             <div class="jr-pay-total">
                 <span class="jr-pay-label">TOTAL AMOUNT</span>
-                <span class="jr-pay-total-amount" id="payTotal" data-total="{{ number_format($order['total'], 2, '.', '') }}">
+                {{-- data-total: no Senior/PWD discount. data-total-senior: with it (CartService::summary()). --}}
+                <span class="jr-pay-total-amount" id="payTotal"
+                      data-total="{{ number_format($order['total'], 2, '.', '') }}"
+                      data-total-senior="{{ number_format($order['senior_total'], 2, '.', '') }}">
                     ₱{{ number_format($order['total'], 2) }}
                 </span>
+                <span class="jr-pay-senior-note" id="paySeniorNote" hidden>
+                    Includes Senior / PWD discount -₱{{ number_format($order['senior_discount'], 2) }}
+                </span>
             </div>
+
+            {{-- Senior Citizen / PWD discount. Big touch buttons (radio inputs), None is the default. --}}
+            <fieldset>
+                <legend class="jr-login-label">Discount</legend>
+                <div class="jr-discount-options">
+                    @foreach (['NONE' => 'None', 'SENIOR' => 'Senior Citizen', 'PWD' => 'PWD'] as $value => $text)
+                        <input type="radio" class="btn-check" name="discount_type" id="discount{{ $value }}" value="{{ $value }}"
+                               autocomplete="off" @checked($discountType === $value)>
+                        <label class="jr-quick-btn jr-discount-btn" for="discount{{ $value }}">{{ $text }}</label>
+                    @endforeach
+                </div>
+                @error('discount_type')
+                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
+
+                {{-- Shown only for Senior Citizen or PWD; both are required then (checked again on the server). --}}
+                <div class="jr-discount-fields" id="discountFields" @if ($discountType === 'NONE') hidden @endif>
+                    <div>
+                        <label for="discountIdNumber" class="jr-login-label">ID number *</label>
+                        <input id="discountIdNumber" name="discount_id_number" type="text" maxlength="30" autocomplete="off"
+                               class="form-control jr-discount-input @error('discount_id_number') is-invalid @enderror"
+                               value="{{ old('discount_id_number') }}" placeholder="Senior / PWD ID no.">
+                        @error('discount_id_number')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div>
+                        <label for="discountCustomerName" class="jr-login-label">Customer name *</label>
+                        <input id="discountCustomerName" name="discount_customer_name" type="text" maxlength="120" autocomplete="off"
+                               class="form-control jr-discount-input @error('discount_customer_name') is-invalid @enderror"
+                               value="{{ old('discount_customer_name') }}" placeholder="Name on the ID">
+                        @error('discount_customer_name')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+            </fieldset>
 
             <div>
                 <label for="payMethod" class="jr-login-label">Payment method</label>
@@ -72,18 +120,41 @@
         const changeBox = document.getElementById('changeBox');
         const changeAmount = document.getElementById('changeAmount');
         const confirmBtn = document.getElementById('payConfirm');
-        const total = parseFloat(document.getElementById('payTotal').dataset.total);
+        const totalEl = document.getElementById('payTotal');
+        const seniorNote = document.getElementById('paySeniorNote');
+        const discountFields = document.getElementById('discountFields');
+        const discountInputs = discountFields.querySelectorAll('input');
         const peso = (n, decimals) => '₱' + n.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+        let total = 0;
+        let amounts = {};
 
         // Next round amount ABOVE the total: 558 -> 600 (step 100), 558 -> 1,000 (step 1000). 500 -> 600, not 500.
         const nextUp = (step) => (Math.floor(total / step) + 1) * step;
-        const amounts = { exact: total, '100': nextUp(100), '1000': nextUp(1000) };
+
+        // Discount chosen: None uses data-total; Senior Citizen or PWD uses data-total-senior and shows the ID / name boxes.
+        function applyDiscount() {
+            const senior = form.querySelector('input[name="discount_type"]:checked').value !== 'NONE';
+
+            total = parseFloat(senior ? totalEl.dataset.totalSenior : totalEl.dataset.total);
+            totalEl.textContent = peso(total, 2);
+            seniorNote.hidden = !senior;
+            discountFields.hidden = !senior;
+            discountInputs.forEach(function (box) { box.required = senior; });
+
+            amounts = { exact: total, '100': nextUp(100), '1000': nextUp(1000) };
+            modalEl.querySelectorAll('[data-quick]').forEach(function (btn) {
+                const amount = amounts[btn.dataset.quick];
+                btn.textContent = btn.dataset.quick === 'exact' ? 'Exact ' + peso(amount, 2) : peso(amount, 0);
+            });
+            updateChange();
+        }
+        form.querySelectorAll('input[name="discount_type"]').forEach(function (radio) {
+            radio.addEventListener('change', applyDiscount);
+        });
 
         modalEl.querySelectorAll('[data-quick]').forEach(function (btn) {
-            const amount = amounts[btn.dataset.quick];
-            btn.textContent = btn.dataset.quick === 'exact' ? 'Exact ' + peso(amount, 2) : peso(amount, 0);
             btn.addEventListener('click', function () {
-                input.value = amount.toFixed(2);
+                input.value = amounts[btn.dataset.quick].toFixed(2);
                 updateChange();
             });
         });
@@ -115,7 +186,7 @@
         });
 
         modalEl.addEventListener('shown.bs.modal', function () { input.focus(); });
-        updateChange();
+        applyDiscount(); // shows the right total, then runs updateChange()
 
         // Came back with an error (not enough cash, stock changed): open the box again with the cash typed before.
         if (modalEl.dataset.reopen === '1') {

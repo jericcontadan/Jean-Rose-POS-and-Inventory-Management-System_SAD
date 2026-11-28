@@ -174,7 +174,7 @@ class PayNowTest extends TestCase
             ->assertSee('108.00')
             ->assertSee('Test Makeup x3')
             ->assertSee('450.00')
-            ->assertSeeInOrder(['Subtotal', '570.00', 'Discount', '-12.00', 'TOTAL', '558.00', 'Cash', '600.00', 'Change', '42.00'])
+            ->assertSeeInOrder(['Subtotal', '570.00', 'Near-expiry discount', '-12.00', 'TOTAL', '558.00', 'Cash', '600.00', 'Change', '42.00'])
             ->assertSee('Thank you!')
             ->assertSee('Print receipt')
             ->assertSee('New order');
@@ -339,7 +339,7 @@ class PayNowTest extends TestCase
         $this->assertSame('0.00', $sale->change_amount);
     }
 
-    public function test_zero_discount_shows_without_minus_sign(): void
+    public function test_zero_discount_line_is_hidden(): void
     {
         $makeup = $this->makeProduct('Test Makeup', 150, [[300, 10, 2]]); // not near expiry: no discount
         $this->addToCart($makeup, 1);
@@ -350,10 +350,11 @@ class PayNowTest extends TestCase
         $this->pay('150');
         $sale = Sale::latest('sale_id')->first();
 
-        // Receipt: "Discount 0.00", never "-0.00".
+        // Receipt: no "Near-expiry discount" line when it is 0.00, and never "-0.00".
         $this->get(route('receipts.show', $sale))
             ->assertOk()
-            ->assertSeeInOrder(['Discount', '0.00', 'TOTAL'])
+            ->assertSeeInOrder(['Subtotal', '150.00', 'TOTAL', '150.00'])
+            ->assertDontSee('Near-expiry discount')
             ->assertDontSee('-0.00');
     }
 
