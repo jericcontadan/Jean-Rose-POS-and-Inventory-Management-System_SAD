@@ -984,6 +984,14 @@ h1, h2, h3, h4, h5, h6, .btn {
 }
 .jr-sales-reason { font-size: 15px; font-style: italic; }
 
+/* Voided ITEM (one line voided, the rest of the sale still paid): same grey, amount struck through */
+.jr-sales-table .jr-item-voided > td { color: #8C7A85; background: #F6F2F4; }
+.jr-item-voided .jr-item-amount { text-decoration: line-through; }
+
+/* Receipt: a voided line is grey and struck through (it is not in the totals) */
+.jr-receipt-row-voided { color: #8C7A85; }
+.jr-receipt-row-voided > span:last-child { text-decoration: line-through; }
+
 /* Daily summary under the table (right side, like the mockup's Total sales box) */
 .jr-sales-pages .pagination { margin: 0; justify-content: flex-end; }
 .jr-sales-pages .page-link { min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }

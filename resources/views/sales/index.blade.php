@@ -4,7 +4,10 @@
     Price is sale_item.unit_price (the price when it was sold), never today's product price.
     CANCELLED (voided) sales are shown grey with their reason and are NOT in the totals.
     Void (screen 8): the Void button opens the void card on the right (?void=<sale id>, mockup right part).
-    Confirm void posts to sales.void; SaleService::void() does the work. Export to Excel downloads this day's Sales report (ExportController).
+    Confirm void posts to sales.void; SaleService::void() does the work.
+    Void one item: each SOLD item of a PAID sale has a "Void item" button (?void_item=<sale_item id>) that opens the
+    void item card; it posts to sales.items.void and SaleService::voidItem() does the work. Voided items are grey with their reason.
+    The items of each sale are hidden until "Items" is tapped (Bootstrap collapse, works by touch). Export to Excel downloads this day's Sales report (ExportController).
     All data comes from SalesRecordController / SaleService; this view only shows it.
 --}}
 @extends('layouts.app')
@@ -91,6 +94,11 @@
                             <td>
                                 <div class="jr-sales-actions">
                                     {{-- Reprint: opens the saved receipt (it has its own Print button). --}}
+                                    {{-- Shows / hides this sale's item rows. --}}
+                                    @php($open = $openSaleId === $sale->sale_id)
+                                    <button type="button" class="btn btn-outline-primary jr-btn-row"
+                                            data-bs-toggle="collapse" data-bs-target=".jr-items-{{ $sale->sale_id }}"
+                                            aria-expanded="{{ $open ? 'true' : 'false' }}">Items ({{ $sale->items->count() }})</button>
                                     <a href="{{ route('receipts.show', $sale) }}" class="btn btn-outline-primary jr-btn-row">Receipt</a>
                                     @unless ($voided)
                                         {{-- Opens the void card for this sale (a normal link: works by touch, no script needed). --}}
@@ -104,16 +112,32 @@
                         </tr>
 
                         {{-- One row per sale_item (a FEFO split shows the same product twice, one row per batch) --}}
+                        {{-- A voided item stays in the list (grey, VOIDED, reason) but is not in the sale's total. --}}
                         @foreach ($sale->items as $item)
-                            <tr class="jr-sales-item-row">
+                            @php($itemVoided = $item->isVoided())
+                            <tr class="jr-sales-item-row collapse jr-items-{{ $sale->sale_id }} {{ $open ? 'show' : '' }} {{ $itemVoided ? 'jr-item-voided' : '' }}">
                                 <td class="text-nowrap">{{ $sale->sale_datetime->format('m/d/Y') }}</td>
                                 <td>{{ $item->batch->product->category->category_name }}</td>
-                                <td class="fw-bold">{{ $item->displayName() }}</td>
+                                <td>
+                                    <span class="fw-bold">{{ $item->displayName() }}</span>
+                                    @if ($itemVoided)
+                                        <span class="jr-badge-voided">VOIDED</span>
+                                        <span class="jr-sales-reason d-block">Reason: {{ $item->void_reason }}</span>
+                                    @endif
+                                </td>
                                 <td class="text-end">{{ $item->quantity }}</td>
                                 <td class="jr-money">{{ $peso($item->unit_price) }}</td>
                                 <td class="text-end">{{ $percent($item->discount_percent) }}</td>
-                                <td class="jr-money fw-bold">{{ $peso($item->line_amount) }}</td>
-                                <td></td>
+                                <td class="jr-money fw-bold jr-item-amount">{{ $peso($item->line_amount) }}</td>
+                                <td>
+                                    @if (! $voided && ! $itemVoided)
+                                        {{-- Opens the void item card for this line (owner only; the server checks it again). --}}
+                                        @php($itemSelected = $voidItem?->sale_item_id === $item->sale_item_id)
+                                        <a href="{{ route('sales.index', ['date' => $date->format('Y-m-d'), 'void_item' => $item->sale_item_id]) }}"
+                                           class="btn jr-btn-void jr-btn-row {{ $itemSelected ? 'jr-btn-void-on' : '' }}"
+                                           @if ($itemSelected) aria-current="true" @endif>Void item</a>
+                                    @endif
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -178,6 +202,43 @@
                 </div>
             </form>
         @endif
+
+        @if ($voidItem)
+            {{-- Void item card: same look as the void card, for ONE line of the sale. --}}
+            <form method="POST" action="{{ route('sales.items.void', $voidItem) }}" class="card jr-void-card" id="voidItemForm">
+                @csrf
+                <h2 class="jr-void-title">Void item from {{ $voidItem->sale->receiptNumber() }}</h2>
+
+                <div class="jr-void-selected">
+                    <span class="jr-void-selected-label">SELECTED ITEM</span>
+                    <span class="fw-bold">{{ $voidItem->displayName() }} x{{ $voidItem->quantity }}</span>
+                    <span>{{ $peso($voidItem->unit_price) }} each, discount {{ $percent($voidItem->discount_percent) }}</span>
+                    <span class="jr-void-selected-total">Amount {{ $peso($voidItem->line_amount) }}</span>
+                </div>
+
+                <div class="d-flex flex-column gap-2">
+                    <label for="voidItemReason" class="jr-void-label">Reason *</label>
+                    <textarea id="voidItemReason" name="reason" rows="3" required minlength="5" maxlength="247"
+                              placeholder="Example: item entered twice"
+                              class="form-control jr-void-reason @error('reason') is-invalid @enderror"
+                              @error('reason') aria-describedby="voidItemReasonError" @enderror>{{ old('reason') }}</textarea>
+                    @error('reason')
+                        <div class="invalid-feedback d-block" id="voidItemReasonError">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="jr-void-note">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4M12 8h.01"></path></svg>
+                    <span>Stock for this item will be returned to inventory and the sale total is recalculated. This is saved in the audit log.</span>
+                </div>
+
+                <div class="jr-void-buttons">
+                    <a href="{{ route('sales.index', ['date' => $date->format('Y-m-d'), 'open' => $voidItem->sale_id]) }}" class="btn btn-outline-primary jr-void-cancel">Cancel</a>
+                    <button type="submit" class="btn jr-btn-confirm-void" id="confirmVoidItem">Confirm void item</button>
+                </div>
+            </form>
+        @endif
         </div>{{-- /.jr-sales-layout --}}
     </div>
 
@@ -222,6 +283,14 @@
         if (voidForm) {
             voidForm.addEventListener('submit', function () {
                 document.getElementById('confirmVoid').disabled = true;
+            });
+        }
+
+        // Confirm void item: same, sent only once (the server also refuses a second void of the same item).
+        const voidItemForm = document.getElementById('voidItemForm');
+        if (voidItemForm) {
+            voidItemForm.addEventListener('submit', function () {
+                document.getElementById('confirmVoidItem').disabled = true;
             });
         }
     })();

@@ -19,14 +19,17 @@ class ReceiptController extends Controller
         $sale->load(['cashier', 'items.batch.product']);
 
         // A product sold from two batches is saved as two sale_item rows (FEFO split).
-        // On paper it is one line, so join rows with the same product and the same discount.
+        // On paper it is one line, so join rows with the same product, the same discount and the same status.
+        // A voided item gets its own line marked "(VOIDED)"; it is not in the totals (the sale totals leave it out).
         $lines = $sale->items
-            ->groupBy(fn (SaleItem $item) => $item->batch->product_id.'|'.$item->discount_percent)
+            ->groupBy(fn (SaleItem $item) => $item->batch->product_id.'|'.$item->discount_percent.'|'.$item->item_status)
             ->map(fn ($items) => [
                 // "Serum x1 (-10%)" or "Makeup x3" (the product name saved at the time of sale)
                 'label' => $items->first()->displayName().' x'.$items->sum('quantity')
-                    .$this->discountText((float) $items->first()->discount_percent),
+                    .$this->discountText((float) $items->first()->discount_percent)
+                    .($items->first()->isVoided() ? ' (VOIDED)' : ''),
                 'amount' => round($items->sum(fn (SaleItem $item) => (float) $item->line_amount), 2),
+                'voided' => $items->first()->isVoided(),
             ])
             ->values();
 
@@ -34,7 +37,25 @@ class ReceiptController extends Controller
             'sale' => $sale,
             'lines' => $lines,
             'discount' => round((float) $sale->subtotal - (float) $sale->total_amount, 2),
+            'refunded' => $this->refunded($sale),
         ]);
+    }
+
+    // Money given back for voided items, or null when no item was voided (no "Refunded" line on the receipt).
+    // What the customer first paid is cash_received - change_amount; the sale total is now lower by the refund.
+    private function refunded(Sale $sale): ?float
+    {
+        $voided = $sale->items->filter(fn (SaleItem $item) => $item->isVoided());
+        if ($voided->isEmpty()) {
+            return null;
+        }
+
+        if ($sale->cash_received === null) {
+            // Very old sale without cash saved: add up the voided lines instead.
+            return round($voided->sum(fn (SaleItem $item) => (float) $item->line_amount), 2);
+        }
+
+        return round((float) $sale->cash_received - (float) $sale->change_amount - (float) $sale->total_amount, 2);
     }
 
     // 10.00 -> " (-10%)", 0 -> "" (no discount on that line)
