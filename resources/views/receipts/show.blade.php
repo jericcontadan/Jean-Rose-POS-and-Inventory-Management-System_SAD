@@ -1,6 +1,6 @@
 {{--
     Receipt (screen 4). Mockup: docs/design/04-payment-receipt.png (right side).
-    Needs $sale, $lines (from ReceiptController) and $discount. Only the receipt card is printed (see @media print in jeanrose.css).
+    Needs $sale, $lines (from ReceiptController), $discount and $refunded (null when no item was voided). Only the receipt card is printed (see @media print in jeanrose.css).
 --}}
 @extends('layouts.app')
 
@@ -31,14 +31,21 @@
 
             <div class="jr-receipt-block">
                 @foreach ($lines as $line)
-                    <div class="jr-receipt-row"><span>{{ $line['label'] }}</span><span>{{ number_format($line['amount'], 2) }}</span></div>
+                    {{-- A voided item is printed grey and struck through; it is not in the totals below. --}}
+                    <div class="jr-receipt-row {{ $line['voided'] ? 'jr-receipt-row-voided' : '' }}"><span>{{ $line['label'] }}</span><span>{{ number_format($line['amount'], 2) }}</span></div>
                 @endforeach
             </div>
 
             <div class="jr-receipt-block">
                 <div class="jr-receipt-row"><span>Subtotal</span><span>{{ number_format($sale->subtotal, 2) }}</span></div>
                 <div class="jr-receipt-row"><span>Discount</span><span>{{ $discount > 0 ? '-' : '' }}{{ number_format($discount, 2) }}</span></div>
-                <div class="jr-receipt-row jr-receipt-total"><span>TOTAL</span><span>{{ number_format($sale->total_amount, 2) }}</span></div>
+                @if ($refunded === null)
+                    <div class="jr-receipt-row jr-receipt-total"><span>TOTAL</span><span>{{ number_format($sale->total_amount, 2) }}</span></div>
+                @else
+                    {{-- Some items were voided: the total is the new one (voided items left out), and the refund is shown under it. --}}
+                    <div class="jr-receipt-row jr-receipt-total"><span>NEW TOTAL</span><span>{{ number_format($sale->total_amount, 2) }}</span></div>
+                    <div class="jr-receipt-row"><span>Refunded (voided items)</span><span>{{ number_format($refunded, 2) }}</span></div>
+                @endif
                 <div class="jr-receipt-row"><span>Cash</span><span>{{ number_format($sale->cash_received, 2) }}</span></div>
                 <div class="jr-receipt-row"><span>Change</span><span>{{ number_format($sale->change_amount, 2) }}</span></div>
             </div>

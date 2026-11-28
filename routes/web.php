@@ -83,6 +83,9 @@ Route::middleware(['auth', 'can:owner'])->group(function () {
     // Void a Sale. block(): two taps on "Confirm void" run one after the other, never at the same time.
     Route::post('/sales/{sale}/void', [SalesRecordController::class, 'void'])->name('sales.void')->block(10, 10);
 
+    // Void ONE item of a sale (the rest of the sale stays paid). Same block() protection against double taps.
+    Route::post('/sales/items/{item}/void', [SalesRecordController::class, 'voidItem'])->name('sales.items.void')->block(10, 10);
+
     // Audit Log: READ ONLY. GET only, on purpose: there is no route to edit or delete audit rows (T18).
     Route::get('/audit-log', [AuditLogController::class, 'index'])->name('audit.index');
 

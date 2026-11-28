@@ -13,6 +13,7 @@ use Carbon\CarbonInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 // Pay Now and Void (docs/04-business-rules.md). Each one runs in ONE DB::transaction():
 // if any step throws, MySQL rolls back every row written so far and nothing is saved.
@@ -166,7 +167,8 @@ class SaleService
                 ->keyBy('batch_id');
 
             // 4. Give each item's quantity back to the same batch: status, history (VOID) and alerts by InventoryService.
-            foreach ($items as $item) {
+            //    Only items still SOLD: an item voided earlier already went back to stock (never return it twice).
+            foreach ($items->where('item_status', 'SOLD') as $item) {
                 $this->inventory->returnForVoid($stock->get($item->batch_id), (int) $item->quantity, $owner);
             }
 
@@ -184,7 +186,98 @@ class SaleService
         });
     }
 
+    /**
+     * Void ONE item (one sale_item row) of a PAID sale. OWNER only. Everything runs in ONE DB::transaction().
+     * The item is never deleted: it is marked VOIDED, its quantity goes back to the same batch,
+     * and the sale's totals are worked out again from the items that are still SOLD.
+     * If no SOLD item is left, the whole sale becomes CANCELLED.
+     */
+    public function voidItem(UserAccount $owner, SaleItem $item, string $reason): Sale
+    {
+        return DB::transaction(function () use ($owner, $item, $reason) {
+            // 1. Lock the sale first (same order as void(), so the two never wait on each other), then the item.
+            $sale = Sale::whereKey($item->sale_id)->lockForUpdate()->firstOrFail();
+            $item = SaleItem::whereKey($item->sale_item_id)->lockForUpdate()->firstOrFail();
+
+            if ($sale->sale_status !== 'PAID') {
+                throw new VoidException("Sale {$sale->receiptNumber()} is already voided.");
+            }
+            if ($item->item_status !== 'SOLD') {
+                throw new VoidException('This item is already voided.');
+            }
+
+            $oldTotal = (float) $sale->total_amount;
+
+            // 2. Mark the item VOIDED with the reason, the time and the owner.
+            $item->update([
+                'item_status' => 'VOIDED',
+                'void_reason' => $reason,
+                'voided_at' => now(),
+                'voided_by' => $owner->user_id,
+            ]);
+
+            // 3. Lock the batch's stock row and give the quantity back (status, history VOID and alerts by InventoryService).
+            $stock = Inventory::with('batch')->where('batch_id', $item->batch_id)->lockForUpdate()->firstOrFail();
+            $this->inventory->returnForVoid($stock, (int) $item->quantity, $owner);
+
+            // 4. Work out the totals again from the items that are still SOLD.
+            $sold = $sale->items()->where('item_status', 'SOLD')->get();
+            $this->recalculate($sale, $sold);
+
+            // 5. No SOLD item left: the whole sale is cancelled.
+            if ($sold->isEmpty()) {
+                $sale->sale_status = 'CANCELLED';
+                $sale->void_reason = 'All items voided';
+                $sale->voided_at = now();
+                $sale->voided_by = $owner->user_id;
+            }
+            $sale->save();
+
+            // 6. Audit row naming the item. The full reason is on sale_item.void_reason; details holds 255 characters.
+            $details = sprintf('Item %s x%d voided, refund %s, new total %s. Reason: %s',
+                $item->displayName(),
+                $item->quantity,
+                number_format($oldTotal - (float) $sale->total_amount, 2, '.', ''),
+                number_format((float) $sale->total_amount, 2, '.', ''),
+                $reason);
+            $this->audit->log($owner, 'VOID', 'SALES', $sale->receiptNumber(), Str::limit($details, 252), $sale->sale_id);
+
+            return $sale;
+        });
+    }
+
+    // New subtotal, discount_amount and total_amount from the SOLD items (the sale is saved by the caller).
+    // discount_amount (Senior / PWD) keeps the same share of the lines: 0 when the sale has no Senior / PWD discount.
+    private function recalculate(Sale $sale, Collection $sold): void
+    {
+        $oldLines = (float) $sale->total_amount + (float) $sale->discount_amount;
+        $subtotal = round($sold->sum(fn (SaleItem $i) => $i->quantity * (float) $i->unit_price), 2);
+        $lines = round($sold->sum(fn (SaleItem $i) => (float) $i->line_amount), 2);
+
+        $discount = 0.0;
+        if ($sale->discount_type !== null && $sale->discount_type !== 'NONE' && $oldLines > 0) {
+            $discount = round((float) $sale->discount_amount * $lines / $oldLines, 2);
+        }
+
+        $sale->subtotal = $subtotal;
+        $sale->discount_amount = $discount;
+        $sale->total_amount = round($lines - $discount, 2);
+    }
+
     // ---------- Sales Records (screen 7): READ ONLY, the methods below never write ----------
+
+    // The item shown in the "void item" card: only a SOLD item of a PAID sale, anything else gives null (no card).
+    public function itemToVoid(?int $itemId): ?SaleItem
+    {
+        if ($itemId === null) {
+            return null;
+        }
+
+        return SaleItem::with('sale')
+            ->where('item_status', 'SOLD')
+            ->whereHas('sale', fn ($q) => $q->where('sale_status', 'PAID'))
+            ->find($itemId);
+    }
 
     // The sale shown in the void card: only a PAID sale can be voided, anything else gives null (no card).
     public function saleToVoid(?int $saleId): ?Sale
@@ -198,9 +291,15 @@ class SaleService
 
     // "Serum x1, Makeup x3": a product sold from two batches (FEFO split) is shown once with its total quantity.
     // The name is the one saved on the sale_item at the time of sale.
+    // Voided items are left out; a sale with no SOLD item left (cancelled) still lists everything it had.
     public function itemsSummary(Sale $sale): string
     {
-        return $sale->items
+        $items = $sale->items->where('item_status', 'SOLD');
+        if ($items->isEmpty()) {
+            $items = $sale->items;
+        }
+
+        return $items
             ->groupBy(fn (SaleItem $item) => $item->batch->product_id)
             ->map(fn ($items) => $items->first()->displayName().' x'.$items->sum('quantity'))
             ->implode(', ');

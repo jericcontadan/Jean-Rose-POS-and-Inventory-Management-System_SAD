@@ -20,6 +20,7 @@ class SaleItem extends Model
             'unit_price' => 'decimal:2',
             'line_amount' => 'decimal:2',
             'discount_percent' => 'decimal:2',
+            'voided_at' => 'datetime',
         ];
     }
 
@@ -27,6 +28,18 @@ class SaleItem extends Model
     public function displayName(): string
     {
         return $this->product_name ?? $this->batch->product->product_name;
+    }
+
+    // true when this line was voided on its own (item void). Voided lines are never counted in totals.
+    public function isVoided(): bool
+    {
+        return $this->item_status === 'VOIDED';
+    }
+
+    // The owner who voided this line (null if not voided).
+    public function voidedBy(): BelongsTo
+    {
+        return $this->belongsTo(UserAccount::class, 'voided_by', 'user_id');
     }
 
     public function sale(): BelongsTo

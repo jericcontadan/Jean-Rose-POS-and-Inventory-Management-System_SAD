@@ -170,8 +170,10 @@ class SalesRecordsTest extends TestCase
             && $s['cancelled_count'] === 1
             && $s['total_sales'] === 216.00);
 
-        // Void is shown once, only for the PAID sale (the voided one has no Void button)
-        $this->assertSame(1, substr_count($response->getContent(), 'jr-btn-void'));
+        // Void is shown once, only for the PAID sale (the voided one has no Void button).
+        // Same for "Void item": only the PAID sale's one item has it.
+        $this->assertSame(1, substr_count($response->getContent(), '>Void</a>'));
+        $this->assertSame(1, substr_count($response->getContent(), '>Void item</a>'));
     }
 
     // ---------- price at the time of sale ----------
