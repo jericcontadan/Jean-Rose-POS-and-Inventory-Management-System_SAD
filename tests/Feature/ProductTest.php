@@ -294,7 +294,7 @@ class ProductTest extends TestCase
         $fresh = $serum->fresh();
         $this->assertSame('Rose Serum', $fresh->product_name);
         $this->assertSame('90.00', $fresh->cost_price);
-        $this->assertSame("Edited product Rose Serum {$serum->product_number}: name, cost price", $this->lastAudit()->details);
+        $this->assertSame("Edited product Rose Serum {$serum->product_number}: name Serum -> Rose Serum, cost price 1.00 -> 90.00", $this->lastAudit()->details);
     }
 
     public function test_edit_with_price_and_name_writes_two_rows(): void
@@ -304,7 +304,7 @@ class ProductTest extends TestCase
         $this->put(route('products.update', $serum), $this->editForm($serum, ['product_name' => 'Rose Serum', 'unit_price' => '125']));
 
         $details = AuditLog::where('user_id', $this->owner->user_id)->orderBy('audit_log_id')->pluck('details')->all();
-        $this->assertSame(['Price Rose Serum: 120.00 to 125.00', "Edited product Rose Serum {$serum->product_number}: name"], $details);
+        $this->assertSame(['Price Rose Serum: 120.00 to 125.00', "Edited product Rose Serum {$serum->product_number}: name Serum -> Rose Serum"], $details);
     }
 
     public function test_edit_with_no_change_saves_nothing(): void
@@ -348,7 +348,7 @@ class ProductTest extends TestCase
         $this->assertNotSame($oldPath, $newPath);
         Storage::disk('public')->assertMissing(Str::after($oldPath, 'storage/'));
         Storage::disk('public')->assertExists(Str::after($newPath, 'storage/'));
-        $this->assertSame("Edited product Toner TST-REIMG: image", $this->lastAudit()->details);
+        $this->assertSame("Edited product Toner TST-REIMG: image changed", $this->lastAudit()->details);
     }
 
     // ---------- Add new batch ----------

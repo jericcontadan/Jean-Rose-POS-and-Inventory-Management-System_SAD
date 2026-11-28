@@ -23,6 +23,12 @@ class SaleItem extends Model
         ];
     }
 
+    // The product name as it was when sold (saved on the row). Very old rows without it fall back to the current name.
+    public function displayName(): string
+    {
+        return $this->product_name ?? $this->batch->product->product_name;
+    }
+
     public function sale(): BelongsTo
     {
         return $this->belongsTo(Sale::class, 'sale_id', 'sale_id');

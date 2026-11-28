@@ -23,8 +23,8 @@ class ReceiptController extends Controller
         $lines = $sale->items
             ->groupBy(fn (SaleItem $item) => $item->batch->product_id.'|'.$item->discount_percent)
             ->map(fn ($items) => [
-                // "Serum x1 (-10%)" or "Makeup x3"
-                'label' => $items->first()->batch->product->product_name.' x'.$items->sum('quantity')
+                // "Serum x1 (-10%)" or "Makeup x3" (the product name saved at the time of sale)
+                'label' => $items->first()->displayName().' x'.$items->sum('quantity')
                     .$this->discountText((float) $items->first()->discount_percent),
                 'amount' => round($items->sum(fn (SaleItem $item) => (float) $item->line_amount), 2),
             ])

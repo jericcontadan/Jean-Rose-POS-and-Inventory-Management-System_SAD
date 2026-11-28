@@ -6,11 +6,14 @@
     <div class="jr-edit-field">
         <label for="batch_number" class="jr-edit-label">Batch number *</label>
         <input id="batch_number" name="batch_number" type="text" maxlength="50" required autocomplete="off"
+               aria-describedby="batchNumberHint"
                class="form-control @error('batch_number', $bag) is-invalid @enderror"
                value="{{ old('batch_number') }}">
         @error('batch_number', $bag)
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
+        {{-- Only a suggestion: any unique batch number is accepted. --}}
+        <div id="batchNumberHint" class="form-text">Format: B-YYYY-MM, for example B-{{ now()->format('Y-m') }}.</div>
     </div>
     <div class="jr-edit-field">
         <label for="expiry_date" class="jr-edit-label">Expiry date *</label>

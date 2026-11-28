@@ -14,8 +14,8 @@ use Illuminate\Database\Eloquent\Collection;
 // so each alert is shown once and emailed once (docs/04-business-rules.md, "Alerts and notifications").
 class AlertService
 {
-    // The order of the groups on the /alerts page and in the email.
-    public const TYPES = [StockStatusService::LOW, StockStatusService::OUT, StockStatusService::NEAR];
+    // The order of the groups on the /alerts page. EXPIRED comes first: those pieces must be taken off the shelf.
+    public const TYPES = [StockStatusService::EXPIRED, StockStatusService::LOW, StockStatusService::OUT, StockStatusService::NEAR];
 
     public function __construct(private BrevoMailService $mailer)
     {
@@ -34,7 +34,7 @@ class AlertService
             return;
         }
 
-        // LOW STOCK, OUT OF STOCK or NEAR EXPIRY: first close open alerts of another type...
+        // EXPIRED, LOW STOCK, OUT OF STOCK or NEAR EXPIRY: first close open alerts of another type...
         (clone $openRows)->where('alert_type', '!=', $status)->update(['resolved_at' => now()]);
 
         // ...then make sure exactly one open alert of this type exists (never a duplicate).
@@ -53,7 +53,7 @@ class AlertService
         return AlertNotification::whereNull('resolved_at')->count();
     }
 
-    // Open alerts for the /alerts page, grouped by type: ['LOW STOCK' => [...], 'OUT OF STOCK' => [...], 'NEAR EXPIRY' => [...]].
+    // Open alerts for the /alerts page, grouped by type: ['EXPIRED' => [...], 'LOW STOCK' => [...], 'OUT OF STOCK' => [...], 'NEAR EXPIRY' => [...]].
     // Empty groups are left out.
     public function openGrouped(): array
     {

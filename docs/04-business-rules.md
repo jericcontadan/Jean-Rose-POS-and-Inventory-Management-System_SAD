@@ -5,6 +5,8 @@ Settings live in `config/pos.php`, read from `.env` (defaults shown):
 
 ## Stock status (one value per inventory row, stored in `inventory.stock_status`)
 Check in this order and use the first match:
+0. `quantity_on_hand > 0` and batch `expiry_date` is before today -> EXPIRED (cannot be sold or restocked;
+   the owner removes it with "Remove stock", saved as an ADJUSTMENT in inventory history)
 1. `quantity_on_hand = 0` -> OUT OF STOCK
 2. batch `expiry_date` is within NEAR_EXPIRY_DAYS from today (and not yet expired) -> NEAR EXPIRY
 3. `quantity_on_hand <= reorder_level` -> LOW STOCK

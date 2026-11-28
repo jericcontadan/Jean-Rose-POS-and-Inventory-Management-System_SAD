@@ -12,6 +12,7 @@
 @php
     // Stored status -> pill class and the text shown (OKAY is shown as OK, like the mockup).
     $pills = [
+        'EXPIRED' => ['class' => 'jr-badge-expired', 'label' => 'EXPIRED'],
         'OUT OF STOCK' => ['class' => 'jr-badge-out', 'label' => 'OUT OF STOCK'],
         'NEAR EXPIRY' => ['class' => 'jr-badge-near', 'label' => 'NEAR EXPIRY'],
         'LOW STOCK' => ['class' => 'jr-badge-low', 'label' => 'LOW STOCK'],
@@ -99,6 +100,11 @@
                                 <div class="jr-inv-actions">
                                     <a href="{{ route('inventory.stock.edit', $row['inventory_id']) }}"
                                        class="btn jr-btn-row {{ in_array($row['status'], ['LOW STOCK', 'OUT OF STOCK']) ? 'btn-primary' : 'btn-outline-primary' }}">Update stock</a>
+                                    {{-- Remove stock: take out expired or damaged pieces (ADJUSTMENT). Highlighted on EXPIRED rows. --}}
+                                    @if ($row['quantity'] > 0)
+                                        <a href="{{ route('inventory.remove.edit', $row['inventory_id']) }}"
+                                           class="btn jr-btn-row {{ $row['status'] === 'EXPIRED' ? 'btn-primary' : 'btn-outline-primary' }}">Remove stock</a>
+                                    @endif
                                     <a href="{{ route('products.price.edit', $row['product_id']) }}" class="btn btn-outline-primary jr-btn-row">Update price</a>
                                     <a href="{{ route('products.edit', $row['product_id']) }}" class="btn btn-outline-primary jr-btn-row">Edit</a>
                                     <form method="POST" action="{{ route('inventory.destroy', $row['inventory_id']) }}" class="m-0"

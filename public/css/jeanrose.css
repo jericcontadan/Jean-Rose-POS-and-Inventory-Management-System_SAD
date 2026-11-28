@@ -291,6 +291,7 @@ h1, h2, h3, h4, h5, h6, .btn {
 /* Stock status badges */
 .jr-badge-low,
 .jr-badge-out,
+.jr-badge-expired,
 .jr-badge-near,
 .jr-badge-ok {
     display: inline-block;
@@ -303,6 +304,7 @@ h1, h2, h3, h4, h5, h6, .btn {
 }
 .jr-badge-low  { background: var(--jr-low-bg);         color: var(--jr-low-text); }
 .jr-badge-out  { background: var(--jr-danger);         color: #FFFFFF; }
+.jr-badge-expired { background: var(--jr-error);       color: #FFFFFF; } /* expired stock: remove from the shelf */
 .jr-badge-near { background: var(--jr-near-expiry-bg); color: var(--jr-near-expiry-text); }
 .jr-badge-ok   { background: var(--jr-ok-bg);          color: var(--jr-ok-text); }
 

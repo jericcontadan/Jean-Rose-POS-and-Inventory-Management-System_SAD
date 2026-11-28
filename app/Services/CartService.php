@@ -43,6 +43,10 @@ class CartService
         $current = $this->items()[$product->product_id] ?? 0;
 
         if ($available <= 0) {
+            // Same rule order as the card badge: EXPIRED (pieces left, but past expiry) before OUT OF STOCK.
+            if ($this->picker->productStatus($product) === StockStatusService::EXPIRED) {
+                throw new RuntimeException('This product has expired and cannot be sold.');
+            }
             throw new RuntimeException("{$product->product_name} is out of stock.");
         }
 

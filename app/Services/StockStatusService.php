@@ -7,10 +7,12 @@ use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 
 // The ONLY place with the stock status rule (docs/04-business-rules.md, "Stock status").
-// Check in this order and use the first match: OUT OF STOCK > NEAR EXPIRY > LOW STOCK > OKAY.
+// Check in this order and use the first match: EXPIRED > OUT OF STOCK > NEAR EXPIRY > LOW STOCK > OKAY.
+// EXPIRED = pieces still on hand but the expiry date is before today (they must be removed, never sold).
 // refresh() saves the result to inventory.stock_status (called by InventoryService after every stock change).
 class StockStatusService
 {
+    public const EXPIRED = 'EXPIRED';
     public const OUT = 'OUT OF STOCK';
     public const NEAR = 'NEAR EXPIRY';
     public const LOW = 'LOW STOCK';
@@ -19,6 +21,10 @@ class StockStatusService
     // Work out the status of one batch (or of the batch a product will sell next).
     public function statusFor(int $quantity, int $reorderLevel, ?CarbonInterface $expiry): string
     {
+        if ($quantity > 0 && $expiry !== null && $this->isExpired($expiry)) {
+            return self::EXPIRED;
+        }
+
         if ($quantity <= 0) {
             return self::OUT;
         }

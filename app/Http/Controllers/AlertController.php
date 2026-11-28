@@ -9,7 +9,7 @@ use Illuminate\View\View;
 // Alerts (screen 6, FR-07). OWNER and CASHIER. Thin controller: the alert rules live in AlertService.
 class AlertController extends Controller
 {
-    // GET /alerts : the open alerts grouped LOW STOCK, OUT OF STOCK, NEAR EXPIRY.
+    // GET /alerts : the open alerts grouped EXPIRED, LOW STOCK, OUT OF STOCK, NEAR EXPIRY.
     public function index(AlertService $alerts): View
     {
         return view('alerts.index', [

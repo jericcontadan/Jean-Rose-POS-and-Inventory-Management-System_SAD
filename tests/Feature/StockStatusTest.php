@@ -7,7 +7,7 @@ use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 // T14 from docs/06-testing.md: stock status rules, checked in this order (first match wins):
-// OUT OF STOCK > NEAR EXPIRY > LOW STOCK > OKAY. No database needed.
+// EXPIRED > OUT OF STOCK > NEAR EXPIRY > LOW STOCK > OKAY. No database needed.
 class StockStatusTest extends TestCase
 {
     private StockStatusService $status;
@@ -61,7 +61,9 @@ class StockStatusTest extends TestCase
 
         $this->assertTrue($this->status->isExpired($yesterday));
         $this->assertFalse($this->status->isNearExpiry($yesterday));
-        $this->assertSame('OKAY', $this->status->statusFor(10, 2, $yesterday));
-        $this->assertSame('LOW STOCK', $this->status->statusFor(1, 2, $yesterday));
+        // Pieces left in an expired batch: EXPIRED (they must be removed). Nothing left: OUT OF STOCK.
+        $this->assertSame('EXPIRED', $this->status->statusFor(10, 2, $yesterday));
+        $this->assertSame('EXPIRED', $this->status->statusFor(1, 2, $yesterday));
+        $this->assertSame('OUT OF STOCK', $this->status->statusFor(0, 2, $yesterday));
     }
 }

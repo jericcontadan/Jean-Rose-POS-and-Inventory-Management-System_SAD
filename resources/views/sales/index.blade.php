@@ -108,7 +108,7 @@
                             <tr class="jr-sales-item-row">
                                 <td class="text-nowrap">{{ $sale->sale_datetime->format('m/d/Y') }}</td>
                                 <td>{{ $item->batch->product->category->category_name }}</td>
-                                <td class="fw-bold">{{ $item->batch->product->product_name }}</td>
+                                <td class="fw-bold">{{ $item->displayName() }}</td>
                                 <td class="text-end">{{ $item->quantity }}</td>
                                 <td class="jr-money">{{ $peso($item->unit_price) }}</td>
                                 <td class="text-end">{{ $percent($item->discount_percent) }}</td>

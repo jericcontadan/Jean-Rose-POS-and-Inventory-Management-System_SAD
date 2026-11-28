@@ -3,22 +3,27 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\BatchInUseException;
+use App\Exceptions\StockRuleException;
+use App\Http\Requests\RemoveStockRequest;
 use App\Http\Requests\StockRequest;
 use App\Models\Inventory;
 use App\Services\InventoryService;
+use App\Services\StockStatusService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Throwable;
 
-// Inventory screen (screen 9, FR-06 / FR-07), Update stock (screen 10) and Delete batch (trash). OWNER only (route group can:owner).
-// Thin controller: the rules live in InventoryService::restock() and deleteBatch().
+// Inventory screen (screen 9, FR-06 / FR-07), Update stock (screen 10), Remove stock and Delete batch (trash).
+// OWNER only (route group can:owner). Thin controller: the rules live in InventoryService::restock(), removeStock() and deleteBatch().
 // Import and Export come later.
 class InventoryController extends Controller
 {
-    public function __construct(private InventoryService $inventory)
-    {
+    public function __construct(
+        private InventoryService $inventory,
+        private StockStatusService $status,
+    ) {
     }
 
     // GET /inventory?q=serum : summary cards + one table row per batch.
@@ -45,8 +50,11 @@ class InventoryController extends Controller
     // GET /inventory/{inventory}/stock : the Update stock card for one batch.
     public function editStock(Inventory $inventory): View
     {
+        $inventory->load('batch.product');
+
         return view('inventory.stock', [
-            'inventory' => $inventory->load('batch.product'),
+            'inventory' => $inventory,
+            'expired' => $this->status->isExpired($inventory->batch->expiry_date), // expired: Save is turned off
         ]);
     }
 
@@ -55,9 +63,42 @@ class InventoryController extends Controller
     {
         try {
             $saved = $this->inventory->restock($request->user(), $inventory, (int) $request->validated('quantity'));
+        } catch (StockRuleException $e) {
+            // Refused by a rule (expired batch): show the reason, nothing was saved.
+            return redirect()->route('inventory.stock.edit', $inventory)->with('error', $e->getMessage());
         } catch (Throwable $e) {
             report($e); // write the real error to the log for us, show a simple message to the owner
             return redirect()->route('inventory.stock.edit', $inventory)->withInput()
+                ->with('error', 'Save failed. Nothing was changed. Please try again.');
+        }
+
+        $saved->load('batch.product');
+
+        return redirect()->route('inventory.index')->with('success',
+            "Stock of {$saved->batch->product->product_name} (batch {$saved->batch->batch_number}) is now {$saved->quantity_on_hand}.");
+    }
+
+    // GET /inventory/{inventory}/remove : the Remove stock card for one batch (expired or damaged pieces).
+    public function editRemove(Inventory $inventory): View
+    {
+        return view('inventory.remove', [
+            'inventory' => $inventory->load('batch.product'),
+            'reasons' => InventoryService::REMOVE_REASONS,
+        ]);
+    }
+
+    // PUT /inventory/{inventory}/remove : "Remove stock". RemoveStockRequest has already checked the quantity and reason.
+    public function updateRemove(RemoveStockRequest $request, Inventory $inventory): RedirectResponse
+    {
+        try {
+            $saved = $this->inventory->removeStock(
+                $request->user(), $inventory, (int) $request->validated('quantity'), $request->validated('reason'));
+        } catch (StockRuleException $e) {
+            // More than on hand: show the reason, nothing was saved.
+            return redirect()->route('inventory.remove.edit', $inventory)->withInput()->with('error', $e->getMessage());
+        } catch (Throwable $e) {
+            report($e);
+            return redirect()->route('inventory.remove.edit', $inventory)->withInput()
                 ->with('error', 'Save failed. Nothing was changed. Please try again.');
         }
 
