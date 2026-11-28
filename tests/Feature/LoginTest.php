@@ -35,14 +35,14 @@ class LoginTest extends TestCase
         return AuditLog::where('user_id', $user->user_id)->where('action_type', 'LOGIN')->count();
     }
 
-    // T01: valid owner -> redirect to POS and one LOGIN audit row.
+    // T01: valid owner -> redirect to the Dashboard (the owner never uses the POS) and one LOGIN audit row.
     public function test_owner_can_log_in_and_login_is_audited(): void
     {
         $owner = $this->makeUser('OWNER');
 
         $response = $this->post('/login', ['username' => $owner->username, 'password' => 'secret123']);
 
-        $response->assertRedirect('/pos');
+        $response->assertRedirect('/dashboard');
         $this->assertAuthenticatedAs($owner);
 
         $row = AuditLog::where('user_id', $owner->user_id)->where('action_type', 'LOGIN')->sole();

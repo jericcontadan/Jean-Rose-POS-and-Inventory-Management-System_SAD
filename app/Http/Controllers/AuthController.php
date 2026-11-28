@@ -63,7 +63,8 @@ class AuthController extends Controller
         $user = Auth::user();
         $audit->log($user, 'LOGIN', 'SALES', null, 'Logged in as '.$user->role);
 
-        return redirect()->route('pos.index');
+        // Owner -> Dashboard, cashier -> POS.
+        return redirect()->route($user->homeRoute());
     }
 
     // POST /logout: end the session and go back to the login page.

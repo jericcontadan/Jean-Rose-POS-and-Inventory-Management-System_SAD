@@ -353,7 +353,56 @@ class SaleService
         ];
     }
 
-    // 00:00:00 to 23:59:59 of that day (app timezone Asia/Manila, the same time sale_datetime is saved in).
+    /**
+     * The numbers on the owner's Dashboard. Sales money uses the Sales Records rules: only PAID sales
+     * (and their SOLD items), and a sale belongs to the day it was made (sale_datetime).
+     * Voids are different on purpose: they count on the day of the VOID (voided_at), whatever day the sale was made,
+     * so "Voided today" is the money given back today.
+     */
+    public function dashboard(CarbonInterface $today): array
+    {
+        $day = $this->dayRange($today);
+        $todaySales = Sale::whereBetween('sale_datetime', $day);
+
+        // Whole sales voided today (any sale day). Their refund is the sale total at the time of the void:
+        // items voided earlier were already taken off the total, and a sale cancelled because its last item
+        // was voided has a total of 0 (that refund is counted with the item below).
+        $voidedSales = Sale::where('sale_status', 'CANCELLED')->whereBetween('voided_at', $day)->get();
+
+        // Single items voided today (any sale day). Refund = the line amount minus the Senior/PWD discount
+        // that line had: the same amount the sale total went down by in voidItem() / recalculate().
+        $voidedItems = SaleItem::with(['sale', 'batch.product'])
+            ->where('item_status', 'VOIDED')
+            ->whereBetween('voided_at', $day)
+            ->get();
+        $itemRefund = $voidedItems->sum(function (SaleItem $item) {
+            $senior = $item->sale->hasSeniorDiscount() ? $this->discounts->seniorAmountFor(collect([$item])) : 0.0;
+
+            return (float) $item->line_amount - $senior;
+        });
+
+        $refund = $voidedSales->sum(fn (Sale $sale) => (float) $sale->total_amount) + $itemRefund;
+
+        // Senior Citizen / PWD discounts given on today's PAID sales.
+        $senior = (clone $todaySales)->where('sale_status', 'PAID')->whereIn('discount_type', ['SENIOR', 'PWD']);
+
+        return [
+            // Exactly the Sales Records summary for today, so both pages always show the same numbers.
+            'today' => $this->dailySummary($today),
+            'month_total' => round((float) Sale::where('sale_status', 'PAID')
+                ->whereBetween('sale_datetime', [$today->copy()->startOfMonth(), $day[1]])
+                ->sum('total_amount'), 2),
+            'voided_sales' => $voidedSales->count(),
+            'voided_items' => $voidedItems->count(),
+            'refund_total' => round($refund, 2),
+            'senior_count' => (clone $senior)->count(),
+            'senior_amount' => round((float) (clone $senior)->sum('discount_amount'), 2),
+            // The 5 newest sales (paid or voided), each links to its receipt.
+            'latest' => Sale::with('cashier')->orderByDesc('sale_datetime')->orderByDesc('sale_id')->limit(5)->get(),
+        ];
+    }
+
+    // 00:00:00 to 23:59:59 of that day (app timezone Asia/Manila, the same time sale_datetime and voided_at are saved in).
     private function dayRange(CarbonInterface $date): array
     {
         return [$date->copy()->startOfDay(), $date->copy()->endOfDay()];

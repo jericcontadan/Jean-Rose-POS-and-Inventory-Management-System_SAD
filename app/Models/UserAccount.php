@@ -53,6 +53,13 @@ class UserAccount extends Authenticatable
         return $this->role === 'OWNER';
     }
 
+    // The page this user starts on (after login, on "/" and on the Jean Rose logo).
+    // The owner manages the store (Dashboard); only the cashier sells (POS).
+    public function homeRoute(): string
+    {
+        return $this->isOwner() ? 'dashboard' : 'pos.index';
+    }
+
     // Sales this user rang up as cashier.
     public function sales(): HasMany
     {

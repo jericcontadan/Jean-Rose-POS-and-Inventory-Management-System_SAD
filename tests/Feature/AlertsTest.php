@@ -115,7 +115,7 @@ class AlertsTest extends TestCase
             ->assertSee('<span class="jr-alerts-count">'.$open.'</span>', false);
 
         // Every page shows the same number in the header.
-        foreach (['/pos', '/inventory', '/sales'] as $url) {
+        foreach (['/dashboard', '/inventory', '/sales'] as $url) {
             $this->actingAs($this->owner)->get($url)->assertSee('<span class="jr-alerts-count">'.$open.'</span>', false);
         }
         $this->actingAs($this->cashier)->get('/pos')->assertSee('<span class="jr-alerts-count">'.$open.'</span>', false);

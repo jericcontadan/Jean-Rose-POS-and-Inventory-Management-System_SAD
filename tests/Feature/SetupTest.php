@@ -82,10 +82,11 @@ class SetupTest extends TestCase
 
     public function test_owner_sees_all_tabs_in_header(): void
     {
-        $response = $this->actingAs($this->makeUser('OWNER'))->get('/pos');
+        $response = $this->actingAs($this->makeUser('OWNER'))->get('/dashboard');
 
         $response->assertOk();
-        $response->assertSee('POS');
+        $response->assertSee('Dashboard');
+        $response->assertDontSee('>POS</a>', false); // no POS tab: the owner does not sell
         $response->assertSee('Sales Records');
         $response->assertSee('Inventory');
         $response->assertSee('Audit Log');

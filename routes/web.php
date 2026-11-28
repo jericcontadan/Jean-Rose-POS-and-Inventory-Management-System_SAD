@@ -3,6 +3,7 @@
 use App\Http\Controllers\AlertController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\InventoryController;
@@ -12,12 +13,13 @@ use App\Http\Controllers\PosController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\SalesRecordController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // Public health check (no login needed).
 Route::get('/health', HealthController::class)->name('health');
 
-// Guests only (a logged-in user is sent to /pos instead).
+// Guests only (a logged-in user is sent to their home page instead).
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'create'])->name('login');
     Route::post('/login', [AuthController::class, 'store'])->name('login.store');
@@ -33,8 +35,18 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'destroy'])->name('logout');
 
-    Route::redirect('/', '/pos');
+    // "/" opens the user's home page: Dashboard for the owner, POS for the cashier.
+    Route::get('/', fn (Request $request) => redirect()->route($request->user()->homeRoute()));
 
+    // Receipt of a saved sale (a cashier sees only their own; checked in ReceiptController).
+    Route::get('/receipts/{sale}', [ReceiptController::class, 'show'])->name('receipts.show');
+
+    // Alerts: the open stock and expiry alerts (cashier and owner both use it).
+    Route::get('/alerts', [AlertController::class, 'index'])->name('alerts.index');
+});
+
+// CASHIER only (Team 4's DFD: the cashier processes sales). can:cashier returns 403 for the owner.
+Route::middleware(['auth', 'can:cashier'])->group(function () {
     // Point of Sale screen and its cart (the cart lives in the session until it is paid).
     Route::get('/pos', [PosController::class, 'index'])->name('pos.index');
     Route::post('/pos/cart/{product}', [PosController::class, 'add'])->name('pos.cart.add');
@@ -45,16 +57,13 @@ Route::middleware('auth')->group(function () {
 
     // Pay Now. block(): two taps from the same session run one after the other, never at the same time.
     Route::post('/pos/pay', [PaymentController::class, 'store'])->name('pos.pay')->block(10, 10);
-
-    // Receipt of a saved sale (a cashier sees only their own; checked in ReceiptController).
-    Route::get('/receipts/{sale}', [ReceiptController::class, 'show'])->name('receipts.show');
-
-    // Alerts: the open stock and expiry alerts (cashier and owner both use it).
-    Route::get('/alerts', [AlertController::class, 'index'])->name('alerts.index');
 });
 
 // OWNER only. can:owner uses the Gate in AppServiceProvider and returns 403 for the cashier.
 Route::middleware(['auth', 'can:owner'])->group(function () {
+    // Dashboard: the owner's home page (today's sales, month total, voids, Senior/PWD, alerts, latest sales).
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
     // Inventory: one row per batch, summary cards, live search.
     Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
 
