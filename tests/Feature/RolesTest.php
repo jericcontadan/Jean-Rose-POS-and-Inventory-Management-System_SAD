@@ -13,7 +13,7 @@ class RolesTest extends TestCase
 {
     use DatabaseTransactions;
 
-    private const OWNER_PAGES = ['/sales', '/inventory', '/audit-log'];
+    private const OWNER_PAGES = ['/dashboard', '/sales', '/inventory', '/audit-log'];
 
     private function makeUser(string $role): UserAccount
     {
@@ -41,12 +41,15 @@ class RolesTest extends TestCase
         $this->get('/alerts')->assertOk();
     }
 
+    // The owner opens every owner page and Alerts, but NOT the POS (only the cashier sells, Team 4's DFD).
     public function test_owner_can_open_all_pages(): void
     {
         $this->actingAs($this->makeUser('OWNER'));
 
-        foreach ([...self::OWNER_PAGES, '/pos', '/alerts'] as $url) {
+        foreach ([...self::OWNER_PAGES, '/alerts'] as $url) {
             $this->get($url)->assertOk();
         }
+
+        $this->get('/pos')->assertForbidden();
     }
 }

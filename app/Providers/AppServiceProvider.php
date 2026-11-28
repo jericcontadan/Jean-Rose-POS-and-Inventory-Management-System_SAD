@@ -41,9 +41,12 @@ class AppServiceProvider extends ServiceProvider
         // Page links (Sales Records) use Bootstrap 5 markup, since the layout uses Bootstrap.
         Paginator::useBootstrapFive();
 
-        // The only access rule in the app: is this user the OWNER?
+        // Access rule 1: is this user the OWNER?
         // Used by @can('owner') in views and by can:owner on owner-only routes.
         Gate::define('owner', fn (UserAccount $user) => $user->role === 'OWNER');
+
+        // Only the cashier sells (Team 4's DFD): used by can:cashier on the POS, cart and Pay Now routes.
+        Gate::define('cashier', fn (UserAccount $user) => $user->role === 'CASHIER');
 
         // A receipt: the owner may open any receipt, a cashier only the sales they made.
         Gate::define('view-receipt', fn (UserAccount $user, Sale $sale) => $user->role === 'OWNER' || (int) $sale->user_id === (int) $user->user_id);

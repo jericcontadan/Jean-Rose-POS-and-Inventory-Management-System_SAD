@@ -14,10 +14,10 @@ The rubric grades Functionality and Testing (30%): core use cases work, test log
 ## Core test cases (write these first)
 | ID | Test | Expected |
 |---|---|---|
-| T01 | Log in with valid owner | Redirect to POS, LOGIN audit row |
+| T01 | Log in with valid owner | Redirect to Dashboard, LOGIN audit row (cashier: redirect to POS) |
 | T02 | Log in with wrong password | Generic error, no session |
 | T03 | Log in with inactive account | Blocked |
-| T04 | Cashier opens `/inventory`, `/sales`, `/audit-log` | 403 |
+| T04 | Cashier opens `/dashboard`, `/inventory`, `/sales`, `/audit-log`; owner opens `/pos`, cart or `/pos/pay` | 403 |
 | T05 | Add item to cart, change quantity | Total updates |
 | T06 | Add out-of-stock product | Refused |
 | T07 | Pay Now with enough cash | Sale PAID with `cash_received` and `change_amount` saved, stock reduced, history SALE, audit SALE |
@@ -37,6 +37,7 @@ The rubric grades Functionality and Testing (30%): core use cases work, test log
 | T21 | Daily alert email | Sent only when un-emailed alerts exist, to owners; `emailed_at` set; second run sends nothing |
 | T23 | Alert tracking | Low stock creates one open `alert_notification` row; no duplicate on repeat; restock to OKAY sets `resolved_at` |
 | T24 | Brevo email API (`BrevoMailTest`) | 201 sends by Brevo only (messageId logged); 401, 500, timeout fall back to Gmail SMTP; request has URL, `api-key` header, JSON body; reset and daily alert use it; both failing keeps the same reset message and `emailed_at` empty |
+| T25 | Owner Dashboard (`DashboardTest`) | Owner lands on `/dashboard`; today's numbers equal the Sales Records summary; voids, refund and Senior/PWD counted; cashier gets 403 |
 | T22 | Tablet check | Layout fits 1024 and 1280 px, buttons usable by touch |
 
 ## Test log (copy rows here as you test)

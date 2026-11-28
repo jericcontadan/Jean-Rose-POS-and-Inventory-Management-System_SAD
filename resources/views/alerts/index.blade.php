@@ -18,7 +18,8 @@
         <section class="card jr-alerts-card" aria-labelledby="alertsTitle">
             <div class="d-flex justify-content-between align-items-center">
                 <h1 id="alertsTitle" class="jr-alerts-title">Alerts ({{ $count }})</h1>
-                <a href="{{ route('pos.index') }}" class="jr-icon-btn" aria-label="Close alerts">
+                {{-- Close goes back to the user's home page: Dashboard (owner) or POS (cashier). --}}
+                <a href="{{ route(auth()->user()->homeRoute()) }}" class="jr-icon-btn" aria-label="Close alerts">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
                          stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"></path></svg>
                 </a>

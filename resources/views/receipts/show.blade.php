@@ -69,7 +69,12 @@
 
         <div class="d-flex gap-3 jr-no-print">
             <button type="button" class="btn btn-outline-primary jr-receipt-btn" id="printReceipt">Print receipt</button>
-            <a href="{{ route('pos.index') }}" class="btn btn-primary jr-receipt-btn">New order</a>
+            {{-- The cashier starts the next order; the owner (who never sells) goes back to Sales Records. --}}
+            @can('cashier')
+                <a href="{{ route('pos.index') }}" class="btn btn-primary jr-receipt-btn">New order</a>
+            @else
+                <a href="{{ route('sales.index', ['date' => $sale->sale_datetime->format('Y-m-d')]) }}" class="btn btn-primary jr-receipt-btn">Back to Sales Records</a>
+            @endcan
         </div>
     </div>
 @endsection

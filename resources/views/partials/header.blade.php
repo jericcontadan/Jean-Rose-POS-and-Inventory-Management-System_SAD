@@ -1,14 +1,16 @@
 {{--
     Header bar (mockup: docs/design/05-inventory-owner.png).
-    OWNER: wordmark, tabs (POS, Sales Records, Inventory, Audit Log), Alerts, Signed in as, Log out.
+    OWNER: wordmark, tabs (Dashboard, Sales Records, Inventory, Audit Log), Alerts, Signed in as, Log out.
+    The owner has no POS tab: only the cashier sells (Team 4's DFD), and /pos is blocked for the owner (can:cashier).
     CASHIER: same but with NO tabs (cashier only uses the POS).
     A page can add a search box with @section('header-search') (used by the POS).
     Guest: wordmark only.
     $openAlertCount comes from the view composer in AppServiceProvider.
-    The menu only hides links; owner pages are also blocked on the server (can:owner).
+    The menu only hides links; pages are also blocked on the server (can:owner, can:cashier).
 --}}
 <header class="jr-header navbar navbar-expand-lg">
-    <a href="{{ url('/pos') }}" class="jr-wordmark" aria-label="Jean Rose home">
+    {{-- The logo goes to the user's home page: Dashboard (owner) or POS (cashier). --}}
+    <a href="{{ auth()->check() ? route(auth()->user()->homeRoute()) : route('login') }}" class="jr-wordmark" aria-label="Jean Rose home">
         <span class="jr-wordmark-name">Jean Rose</span>
         <span class="jr-wordmark-tag">BEAUTY PRODUCTS TRADING</span>
     </a>
@@ -18,8 +20,8 @@
             {{-- Owner tabs. On wide screens they sit next to the wordmark; below 992px they open from the Menu button. --}}
             <div class="collapse navbar-collapse order-last order-lg-1 flex-grow-0" id="ownerMenu">
                 <nav class="nav nav-pills" aria-label="Owner menu">
-                    <a class="nav-link {{ request()->is('pos*') ? 'active' : '' }}" href="{{ url('/pos') }}"
-                       @if (request()->is('pos*')) aria-current="page" @endif>POS</a>
+                    <a class="nav-link {{ request()->is('dashboard*') ? 'active' : '' }}" href="{{ url('/dashboard') }}"
+                       @if (request()->is('dashboard*')) aria-current="page" @endif>Dashboard</a>
                     <a class="nav-link {{ request()->is('sales*') ? 'active' : '' }}" href="{{ url('/sales') }}"
                        @if (request()->is('sales*')) aria-current="page" @endif>Sales Records</a>
                     <a class="nav-link {{ request()->is('inventory*', 'products*') ? 'active' : '' }}" href="{{ url('/inventory') }}"

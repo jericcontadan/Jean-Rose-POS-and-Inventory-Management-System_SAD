@@ -8,7 +8,7 @@ Client: the shop owner. Team: BSIS-3C Team 4. Phase 4 (systems implementation), 
 ## Users and roles (confirmed)
 | Role | Can do |
 |---|---|
-| OWNER | Everything: POS, Sales Records, void a recorded sale, Inventory (products, batches, stock, prices), Excel import/export, Audit Log, alerts, password recovery |
+| OWNER | Manages the store, does not sell (Team 4's DFD): Dashboard, Sales Records, void a recorded sale, Inventory (products, batches, stock, prices), Excel import/export, Audit Log, alerts, password recovery |
 | CASHIER | POS only: take orders, apply the automatic near-expiry discount, take cash payment, print receipt, see alerts, log out |
 There are only two fixed account types. No role or permission management screen (Form A: RBAC is out of scope).
 Accounts are created by the owner or by a developer script. There is NO public sign-up page.
