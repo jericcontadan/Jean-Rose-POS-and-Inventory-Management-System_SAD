@@ -1,6 +1,6 @@
 {{--
     Alerts (screen 6), OWNER and CASHIER. Mockup: docs/design/08-alerts-daily-email.png.
-    Left card = this page: open alerts grouped LOW STOCK, OUT OF STOCK, NEAR EXPIRY.
+    Left card = this page: open alerts grouped EXPIRED, LOW STOCK, OUT OF STOCK, NEAR EXPIRY.
     Right = the "Who gets what" box. (The mockup's email card is the template for the daily email, not shown here.)
     $viewRoute is chosen in AlertController: inventory.index for the owner, pos.index for the cashier.
 --}}
@@ -10,7 +10,7 @@
 
 @php
     // Badge class for each alert type (same badges as the POS cards and Inventory).
-    $badgeClass = ['LOW STOCK' => 'jr-badge-low', 'OUT OF STOCK' => 'jr-badge-out', 'NEAR EXPIRY' => 'jr-badge-near'];
+    $badgeClass = ['EXPIRED' => 'jr-badge-expired', 'LOW STOCK' => 'jr-badge-low', 'OUT OF STOCK' => 'jr-badge-out', 'NEAR EXPIRY' => 'jr-badge-near'];
 @endphp
 
 @section('content')
@@ -41,6 +41,8 @@
                                 · reorder level {{ $batch->inventory?->reorder_level }}
                             @elseif ($type === 'NEAR EXPIRY')
                                 · discounted on sale
+                            @elseif ($type === 'EXPIRED')
+                                · remove from shelf
                             @endif
                         </span>
                         <a href="{{ route($viewRoute, ['q' => $product->product_name]) }}"
@@ -62,7 +64,7 @@
             </div>
             <div class="jr-alert-tile">
                 <span class="jr-who-role">Owner</span>
-                <span>In the system and one daily email (Gmail)</span>
+                <span>In the system and one daily email (Brevo, Gmail as backup)</span>
             </div>
         </aside>
     </div>

@@ -209,7 +209,7 @@ class PosTest extends TestCase
         $old = $this->makeProduct('Test Old Cream', 100, [[-1, 5, 1]]);
 
         $this->post("/pos/cart/{$old->product_id}")
-            ->assertSessionHas('error', 'Test Old Cream is out of stock.');
+            ->assertSessionHas('error', 'This product has expired and cannot be sold.');
 
         $this->assertSame([], $this->cart());
     }

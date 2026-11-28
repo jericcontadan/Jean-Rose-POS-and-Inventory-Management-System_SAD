@@ -3,11 +3,14 @@
 namespace App\Services;
 
 use App\Exceptions\BatchInUseException;
+use App\Exceptions\StockRuleException;
+use App\Models\Category;
 use App\Models\Inventory;
 use App\Models\InventoryHistory;
 use App\Models\Product;
 use App\Models\ProductBatch;
 use App\Models\SaleItem;
+use App\Models\Supplier;
 use App\Models\UserAccount;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
@@ -20,7 +23,7 @@ use Throwable;
 // The ONLY place that changes inventory.quantity_on_hand (docs/08-architecture.md, rule 2),
 // so stock_status, inventory_history and alert_notification always stay in step with the stock.
 // Sale and void: call it inside the caller's DB::transaction() with the inventory row already locked (lockForUpdate).
-// Restock and price change (screen 10): restock() and changePrice() open their own DB::transaction().
+// Restock, remove stock and price change (screen 10): restock(), removeStock() and changePrice() open their own DB::transaction().
 // Add or Edit Product (screen 12): addProduct(), editProduct(), addBatch() and deleteBatch() do the same.
 class InventoryService
 {
@@ -53,6 +56,11 @@ class InventoryService
             $inventory->setRelation('batch', $batch); // the status rule needs the batch's expiry date
             $before = (int) $inventory->quantity_on_hand;
 
+            // An expired batch is never sold, so adding pieces to it makes no sense: add a new batch instead.
+            if ($this->status->isExpired($batch->expiry_date)) {
+                throw new StockRuleException('This batch has expired. Add a new batch instead.');
+            }
+
             // 2. The batch also keeps how many pieces it has received in total.
             $batch->quantity_in_batch += $quantity;
             $batch->save();
@@ -67,6 +75,48 @@ class InventoryService
                 'INVENTORY',
                 $batch->batch_number,
                 "Restock {$batch->batch_number} +{$quantity} ({$before} to {$inventory->quantity_on_hand})",
+            );
+
+            return $inventory;
+        });
+    }
+
+    // Reasons the owner can choose on the Remove stock page.
+    public const REMOVE_REASONS = ['Expired', 'Damaged', 'Other'];
+
+    /**
+     * Remove stock (OWNER only): take $quantity pieces out of ONE batch, for example expired or damaged pieces.
+     * One DB::transaction(): the stock goes down, history gets an ADJUSTMENT row (negative) and audit_log an
+     * INVENTORY_UPDATE row with the reason. quantity_in_batch is not changed (it counts pieces received).
+     */
+    public function removeStock(UserAccount $owner, Inventory $inventory, int $quantity, string $reason): Inventory
+    {
+        if ($quantity <= 0) {
+            throw new RuntimeException("Cannot remove {$quantity} pieces.");
+        }
+
+        return DB::transaction(function () use ($owner, $inventory, $quantity, $reason) {
+            // 1. Read the stock row and its batch again and LOCK them (a sale at the same moment waits).
+            $inventory = Inventory::whereKey($inventory->inventory_id)->lockForUpdate()->firstOrFail();
+            $batch = ProductBatch::whereKey($inventory->batch_id)->lockForUpdate()->firstOrFail();
+            $inventory->setRelation('batch', $batch); // the status rule needs the batch's expiry date
+            $before = (int) $inventory->quantity_on_hand;
+
+            // 2. Never below zero.
+            if ($quantity > $before) {
+                throw new StockRuleException("Only {$before} pieces are in this batch. You cannot remove {$quantity}.");
+            }
+
+            // 3. Lower the stock, refresh its status, write history (ADJUSTMENT, negative) and sync alerts.
+            $this->move($inventory, -$quantity, 'ADJUSTMENT', $owner);
+
+            // 4. Audit row, for example "Removed 5 from B-VITA-01 (10 to 5), reason: Expired".
+            $this->audit->log(
+                $owner,
+                'INVENTORY_UPDATE',
+                'INVENTORY',
+                $batch->batch_number,
+                "Removed {$quantity} from {$batch->batch_number} ({$before} to {$inventory->quantity_on_hand}), reason: {$reason}",
             );
 
             return $inventory;
@@ -160,6 +210,7 @@ class InventoryService
                 $product = Product::whereKey($product->product_id)->lockForUpdate()->firstOrFail();
                 $oldImage = $product->image_path;
                 $oldPrice = number_format((float) $product->unit_price, 2, '.', '');
+                $old = $product->only(['product_number', 'product_name', 'category_id', 'supplier_id', 'cost_price']);
 
                 // 2. Put the new values on the model. Money is saved with 2 decimals, ids as numbers.
                 $product->fill([
@@ -175,12 +226,8 @@ class InventoryService
                 }
 
                 // 3. Which fields really changed? (Eloquent compares old and new values for us.)
-                $labels = [
-                    'product_number' => 'product number', 'product_name' => 'name', 'category_id' => 'category',
-                    'supplier_id' => 'supplier', 'cost_price' => 'cost price', 'image_path' => 'image',
-                ];
                 $priceChanged = $product->isDirty('unit_price');
-                $otherChanges = array_values(array_intersect_key($labels, $product->getDirty()));
+                $otherChanges = $this->changeTexts($product, $old); // like ["name Serum -> Rose Serum"]
 
                 if (! $priceChanged && $otherChanges === []) {
                     return null; // unchanged: no update, no audit row
@@ -304,6 +351,41 @@ class InventoryService
         return $batch;
     }
 
+    // One text per changed field (not the price), old value -> new value, like "name Serum -> Rose Serum".
+    // Category and supplier are shown by name; the picture only as "image changed" (a file path means nothing to a person).
+    private function changeTexts(Product $product, array $old): array
+    {
+        $labels = [
+            'product_name' => 'name', 'product_number' => 'product number', 'category_id' => 'category',
+            'supplier_id' => 'supplier', 'cost_price' => 'cost price',
+        ];
+
+        $texts = [];
+        foreach ($labels as $field => $label) {
+            if (! $product->isDirty($field)) {
+                continue;
+            }
+
+            $before = $old[$field];
+            $after = $product->{$field};
+            if ($field === 'category_id') {
+                $before = Category::find($before)?->category_name;
+                $after = Category::find($after)?->category_name;
+            } elseif ($field === 'supplier_id') {
+                $before = Supplier::find($before)?->supplier_name;
+                $after = Supplier::find($after)?->supplier_name;
+            }
+
+            $texts[] = "{$label} {$before} -> {$after}";
+        }
+
+        if ($product->isDirty('image_path')) {
+            $texts[] = 'image changed';
+        }
+
+        return $texts;
+    }
+
     // Same text for Update price and for a price change on Edit product: "Price Serum: 120.00 to 125.00".
     private function priceText(Product $product, string $old, string $new): string
     {
@@ -410,14 +492,14 @@ class InventoryService
     }
 
     /**
-     * The three summary cards: how many batches are LOW STOCK, OUT OF STOCK and NEAR EXPIRY,
+     * The summary cards: how many batches are EXPIRED, LOW STOCK, OUT OF STOCK and NEAR EXPIRY,
      * plus the first one of each (in the table order) as a short example line.
      */
     public function summary(Collection $rows): array
     {
         $cards = [];
 
-        foreach ([StockStatusService::LOW, StockStatusService::OUT, StockStatusService::NEAR] as $status) {
+        foreach ([StockStatusService::EXPIRED, StockStatusService::LOW, StockStatusService::OUT, StockStatusService::NEAR] as $status) {
             $matching = $rows->where('status', $status);
             $first = $matching->first();
 
@@ -436,6 +518,7 @@ class InventoryService
         return match ($status) {
             StockStatusService::LOW => "{$row['product_name']} · {$row['quantity']} left (reorder at {$row['reorder_level']})",
             StockStatusService::OUT => "{$row['product_name']} · 0 left",
+            StockStatusService::EXPIRED => "{$row['product_name']} · expired {$row['expiry_date']->format('m/d/Y')}",
             default => "{$row['product_name']} · expires {$row['expiry_date']->format('m/d/Y')}",
         };
     }

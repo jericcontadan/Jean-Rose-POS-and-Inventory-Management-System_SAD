@@ -69,7 +69,7 @@ class SaleService
                     $percent = $this->status->discountPercentFor($part['batch']->expiry_date);
                     $lineAmount = round($part['quantity'] * $unitPrice * (1 - $percent / 100), 2);
 
-                    $parts[] = $part + ['unit_price' => $unitPrice, 'percent' => $percent, 'line_amount' => $lineAmount];
+                    $parts[] = $part + ['product' => $product, 'unit_price' => $unitPrice, 'percent' => $percent, 'line_amount' => $lineAmount];
                     $subtotal += $part['quantity'] * $unitPrice;
                     $total += $lineAmount;
                 }
@@ -97,7 +97,8 @@ class SaleService
                 'change_amount' => $change,
             ]);
 
-            // 5. Insert one sale_item per batch (unit_price is copied, so later price changes do not alter this sale).
+            // 5. Insert one sale_item per batch. unit_price, product_name and product_number are copied,
+            //    so a later price change or rename does not alter this sale, its receipt or the reports.
             foreach ($parts as $part) {
                 SaleItem::create([
                     'sale_id' => $sale->sale_id,
@@ -106,6 +107,8 @@ class SaleService
                     'unit_price' => $part['unit_price'],
                     'line_amount' => $part['line_amount'],
                     'discount_percent' => $part['percent'],
+                    'product_name' => $part['product']->product_name,
+                    'product_number' => $part['product']->product_number,
                 ]);
             }
 
@@ -194,11 +197,12 @@ class SaleService
     }
 
     // "Serum x1, Makeup x3": a product sold from two batches (FEFO split) is shown once with its total quantity.
+    // The name is the one saved on the sale_item at the time of sale.
     public function itemsSummary(Sale $sale): string
     {
         return $sale->items
             ->groupBy(fn (SaleItem $item) => $item->batch->product_id)
-            ->map(fn ($items) => $items->first()->batch->product->product_name.' x'.$items->sum('quantity'))
+            ->map(fn ($items) => $items->first()->displayName().' x'.$items->sum('quantity'))
             ->implode(', ');
     }
 

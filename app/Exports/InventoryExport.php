@@ -51,7 +51,7 @@ class InventoryExport implements FromArray, WithHeadings, WithColumnFormatting, 
             $batch?->expiry_date ? Date::dateTimeToExcel($batch->expiry_date) : null, // a real Excel date
             (int) $row->quantity_on_hand,
             (float) ($product?->unit_price ?? 0),
-            $this->status->statusForInventory($row), // OUT OF STOCK / NEAR EXPIRY / LOW STOCK / OKAY
+            $this->status->statusForInventory($row), // EXPIRED / OUT OF STOCK / NEAR EXPIRY / LOW STOCK / OKAY
         ];
     }
 

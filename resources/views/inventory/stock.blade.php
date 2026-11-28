@@ -37,7 +37,7 @@
                 <div class="jr-edit-field">
                     <label for="quantity" class="jr-edit-label">Quantity to add *</label>
                     <input id="quantity" name="quantity" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6"
-                           autocomplete="off" required autofocus
+                           autocomplete="off" required @disabled($expired) @unless ($expired) autofocus @endunless
                            class="form-control jr-edit-input @error('quantity') is-invalid @enderror"
                            value="{{ old('quantity') }}">
                     @error('quantity')
@@ -46,17 +46,25 @@
                 </div>
             </div>
 
-            {{-- Live preview: current stock + quantity to add (script below). The server works it out again on Save. --}}
-            <div class="jr-new-stock" aria-live="polite">
-                <span class="jr-new-stock-label">NEW STOCK</span>
-                <span class="jr-new-stock-value" id="newStock">&mdash;</span>
-            </div>
+            {{-- Live preview: current stock + quantity to add (script below). The server works it out again on Save.
+                 Not shown for an expired batch: it cannot be restocked. --}}
+            @unless ($expired)
+                <div class="jr-new-stock" aria-live="polite">
+                    <span class="jr-new-stock-label">NEW STOCK</span>
+                    <span class="jr-new-stock-value" id="newStock">&mdash;</span>
+                </div>
+            @endunless
 
-            <p class="jr-form-note">Saved as a RESTOCK in inventory history.</p>
+            @if ($expired)
+                {{-- An expired batch cannot be restocked (InventoryService::restock refuses it too). --}}
+                <div class="alert alert-danger mb-0" role="alert">This batch has expired. Add a new batch instead.</div>
+            @else
+                <p class="jr-form-note">Saved as a RESTOCK in inventory history.</p>
+            @endif
 
             <div class="jr-edit-buttons">
                 <a href="{{ route('inventory.index') }}" class="btn btn-outline-primary jr-edit-cancel">Cancel</a>
-                <button type="submit" class="btn btn-primary jr-edit-save">Save stock</button>
+                <button type="submit" class="btn btn-primary jr-edit-save" @disabled($expired)>Save stock</button>
             </div>
         </form>
     </div>
@@ -69,6 +77,9 @@
         const current = parseInt(document.getElementById('currentStock').dataset.current, 10);
         const input = document.getElementById('quantity');
         const output = document.getElementById('newStock');
+        if (!output) {
+            return; // expired batch: no preview on the page
+        }
 
         function showNewStock() {
             const text = input.value.trim();

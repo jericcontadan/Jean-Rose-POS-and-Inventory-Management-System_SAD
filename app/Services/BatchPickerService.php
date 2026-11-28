@@ -40,13 +40,18 @@ class BatchPickerService
 
     // One status for a product card, based on the batch that will be sold NEXT (first FEFO batch):
     // statusFor(total sellable pieces, that batch's reorder level, that batch's expiry date).
-    // A product with no sellable batch (none left, or all expired) is OUT OF STOCK.
+    // A product with no sellable batch is EXPIRED when a batch still has pieces that are past their expiry date,
+    // otherwise OUT OF STOCK (rule order EXPIRED > OUT OF STOCK). Both cannot be added to an order.
     public function productStatus(Product $product): string
     {
         $next = $this->sellableBatches($product)->first();
 
         if ($next === null) {
-            return StockStatusService::OUT;
+            $hasExpiredStock = $product->batches->contains(fn (ProductBatch $batch) => $batch->inventory !== null
+                && $batch->inventory->quantity_on_hand > 0
+                && $this->status->isExpired($batch->expiry_date));
+
+            return $hasExpiredStock ? StockStatusService::EXPIRED : StockStatusService::OUT;
         }
 
         return $this->status->statusFor($this->available($product), $next->inventory->reorder_level, $next->expiry_date);

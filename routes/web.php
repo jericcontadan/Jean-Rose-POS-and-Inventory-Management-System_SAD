@@ -62,6 +62,9 @@ Route::middleware(['auth', 'can:owner'])->group(function () {
     // block(): two taps on Save run one after the other, never at the same time.
     Route::get('/inventory/{inventory}/stock', [InventoryController::class, 'editStock'])->name('inventory.stock.edit');
     Route::put('/inventory/{inventory}/stock', [InventoryController::class, 'updateStock'])->name('inventory.stock.update')->block(10, 10);
+    // Remove stock of one batch (expired or damaged pieces), saved as ADJUSTMENT in inventory history.
+    Route::get('/inventory/{inventory}/remove', [InventoryController::class, 'editRemove'])->name('inventory.remove.edit');
+    Route::put('/inventory/{inventory}/remove', [InventoryController::class, 'updateRemove'])->name('inventory.remove.update')->block(10, 10);
     Route::get('/products/{product}/price', [ProductController::class, 'editPrice'])->name('products.price.edit');
     Route::put('/products/{product}/price', [ProductController::class, 'updatePrice'])->name('products.price.update')->block(10, 10);
 
