@@ -40,6 +40,8 @@ COLLATE = utf8mb4_0900_ai_ci;
 -- -----------------------------------------------------
 -- Table `jeanrose_pos_test`.`sale`
 -- NEW: cash_received, change_amount, void_reason, voided_at, voided_by
+-- NEW (v2): discount_type, discount_id_number, discount_customer_name,
+--           discount_amount
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `jeanrose_pos_test`.`sale` ;
 
@@ -50,6 +52,10 @@ CREATE TABLE IF NOT EXISTS `jeanrose_pos_test`.`sale` (
   `subtotal` DECIMAL(12,2) NOT NULL,
   `total_amount` DECIMAL(12,2) NOT NULL,
   `discount_percent` DECIMAL(5,2) NOT NULL DEFAULT '0.00',
+  `discount_type` ENUM('NONE', 'SENIOR', 'PWD') NOT NULL DEFAULT 'NONE',
+  `discount_id_number` VARCHAR(30) NULL DEFAULT NULL,
+  `discount_customer_name` VARCHAR(120) NULL DEFAULT NULL,
+  `discount_amount` DECIMAL(12,2) NOT NULL DEFAULT '0.00',
   `sale_status` ENUM('PAID', 'CANCELLED') NOT NULL DEFAULT 'PAID',
   `cash_received` DECIMAL(12,2) NULL DEFAULT NULL,
   `change_amount` DECIMAL(12,2) NULL DEFAULT NULL,
@@ -208,7 +214,7 @@ CREATE TABLE IF NOT EXISTS `jeanrose_pos_test`.`inventory` (
   `batch_id` INT NOT NULL,
   `quantity_on_hand` INT NOT NULL DEFAULT '0',
   `reorder_level` INT NOT NULL DEFAULT '0',
-  `stock_status` ENUM('LOW STOCK', 'OUT OF STOCK', 'OKAY', 'NEAR EXPIRY') NOT NULL DEFAULT 'OKAY',
+  `stock_status` ENUM('LOW STOCK', 'OUT OF STOCK', 'OKAY', 'NEAR EXPIRY', 'EXPIRED') NOT NULL DEFAULT 'OKAY',
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`inventory_id`),
   INDEX `fk_inventory_batch` (`batch_id` ASC) VISIBLE,
@@ -234,7 +240,7 @@ CREATE TABLE IF NOT EXISTS `jeanrose_pos_test`.`inventory_history` (
   `batch_id` INT NOT NULL,
   `user_id` INT NOT NULL,
   `quantity_change` INT NOT NULL,
-  `transaction_type` ENUM('RESTOCK', 'SALE', 'VOID') NOT NULL,
+  `transaction_type` ENUM('RESTOCK', 'SALE', 'VOID', 'ADJUSTMENT') NOT NULL,
   `transaction_datetime` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`transaction_id`),
   INDEX `fk_invhist_inventory` (`inventory_id` ASC) VISIBLE,
@@ -262,6 +268,8 @@ COLLATE = utf8mb4_0900_ai_ci;
 
 -- -----------------------------------------------------
 -- Table `jeanrose_pos_test`.`sale_item`
+-- NEW (v2): item_status, void_reason, voided_at, voided_by,
+--           product_name, product_number (snapshot at sale time)
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `jeanrose_pos_test`.`sale_item` ;
 
@@ -273,9 +281,21 @@ CREATE TABLE IF NOT EXISTS `jeanrose_pos_test`.`sale_item` (
   `unit_price` DECIMAL(12,2) NOT NULL,
   `line_amount` DECIMAL(12,2) NOT NULL,
   `discount_percent` DECIMAL(5,2) NOT NULL DEFAULT '0.00',
+  `item_status` ENUM('SOLD', 'VOIDED') NOT NULL DEFAULT 'SOLD',
+  `void_reason` VARCHAR(255) NULL DEFAULT NULL,
+  `voided_at` DATETIME NULL DEFAULT NULL,
+  `voided_by` INT NULL DEFAULT NULL,
+  `product_name` VARCHAR(150) NULL DEFAULT NULL,
+  `product_number` VARCHAR(60) NULL DEFAULT NULL,
   PRIMARY KEY (`sale_item_id`),
   INDEX `fk_saleitem_sale` (`sale_id` ASC) VISIBLE,
   INDEX `fk_saleitem_batch` (`batch_id` ASC) VISIBLE,
+  INDEX `fk_saleitem_voided_by` (`voided_by` ASC) VISIBLE,
+  CONSTRAINT `fk_saleitem_voided_by`
+    FOREIGN KEY (`voided_by`)
+    REFERENCES `jeanrose_pos_test`.`user_account` (`user_id`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
   CONSTRAINT `fk_saleitem_batch`
     FOREIGN KEY (`batch_id`)
     REFERENCES `jeanrose_pos_test`.`product_batch` (`batch_id`)
@@ -317,7 +337,7 @@ DROP TABLE IF EXISTS `jeanrose_pos_test`.`alert_notification` ;
 CREATE TABLE IF NOT EXISTS `jeanrose_pos_test`.`alert_notification` (
   `alert_id` INT NOT NULL AUTO_INCREMENT,
   `batch_id` INT NOT NULL,
-  `alert_type` ENUM('LOW STOCK', 'OUT OF STOCK', 'NEAR EXPIRY') NOT NULL,
+  `alert_type` ENUM('LOW STOCK', 'OUT OF STOCK', 'NEAR EXPIRY', 'EXPIRED') NOT NULL,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `emailed_at` DATETIME NULL DEFAULT NULL,
   `resolved_at` DATETIME NULL DEFAULT NULL,
